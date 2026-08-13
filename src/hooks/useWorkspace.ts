@@ -33,10 +33,11 @@ export const loadLocalWorkspace = (userId: string): WorkspaceData => {
     const saved = localStorage.getItem(localKey(userId));
     if (!saved) return initialWorkspace();
     const parsed = JSON.parse(saved) as Partial<WorkspaceData>;
+    const themeKey = userId === "signed-out" ? cachedThemeKey : parsed.settings?.themeKey ?? cachedThemeKey;
     return {
       ...initialWorkspace(),
       ...parsed,
-      settings: { ...DEFAULT_SETTINGS, ...parsed.settings, themeKey: normalizeThemeKey(parsed.settings?.themeKey ?? cachedThemeKey) },
+      settings: { ...DEFAULT_SETTINGS, ...parsed.settings, themeKey: normalizeThemeKey(themeKey) },
       timer: { ...initialTimer(), ...parsed.timer },
     };
   } catch {
@@ -322,6 +323,7 @@ export const useWorkspace = (userId: string, cloudEnabled: boolean) => {
   }, [cloudEnabled]);
 
   const updateSettings = useCallback(async (patch: Partial<UserSettings>) => {
+    if (patch.themeKey !== undefined) saveCachedThemeKey(patch.themeKey);
     setData((current) => ({ ...current, settings: { ...current.settings, ...patch } }));
     if (cloudEnabled && supabase) {
       const next = { ...data.settings, ...patch };

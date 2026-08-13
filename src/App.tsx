@@ -13,7 +13,7 @@ import { useWorkspace } from "./hooks/useWorkspace";
 import { DEFAULT_PRESET, initialTimer } from "./lib/constants";
 import { enablePushNotifications, playCompletionSound, showLocalNotification } from "./lib/notifications";
 import { completeAuthCallback, getSession, isSupabaseConfigured, signInWithFacebook, signInWithGoogle, supabase } from "./lib/supabase";
-import { loadCachedThemeKey, themeCssVariables } from "./lib/themes";
+import { themeCssVariables } from "./lib/themes";
 import { completeSpotifyLogin } from "./lib/spotifyAuth";
 import { canShowFeedbackSurvey, completedFocusSessionCount, shouldPromptForFeedback } from "./lib/feedback";
 import { moveToNextPhase, phaseDuration, remainingFromEnd, switchTimerPhase } from "./lib/timer";
@@ -31,11 +31,10 @@ export default function App() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [cachedThemeKey] = useState(() => loadCachedThemeKey());
   const userId = session?.user.id ?? "signed-out";
   const cloudEnabled = Boolean(session && isSupabaseConfigured);
   const workspace = useWorkspace(userId, cloudEnabled);
-  const activeThemeKey = session || testAuthenticated ? workspace.data.settings.themeKey : cachedThemeKey;
+  const activeThemeKey = workspace.data.settings.themeKey;
   const themeStyle = useMemo(() => themeCssVariables(activeThemeKey) as CSSProperties, [activeThemeKey]);
   const { finishTimer, setTimerLocal: persistTimerLocal } = workspace;
   const timerRef = useRef(workspace.data.timer);
@@ -205,7 +204,7 @@ export default function App() {
     setFeedbackOpen(true);
   };
 
-  if (!authReady) return <div className="loading-screen"><TimerReset className="spin" /><span>Opening your studio…</span></div>;
+  if (!authReady) return <div className="loading-screen cooper-style kawaii-cooper-theme" data-theme={activeThemeKey} style={themeStyle}><TimerReset className="spin" /><span>Opening your studio…</span></div>;
   if (!session && !testAuthenticated) return <div className="cooper-style kawaii-cooper-theme" data-theme={activeThemeKey} style={themeStyle}>
     <AuthScreen
       configured={isSupabaseConfigured}

@@ -28,6 +28,13 @@ describe("workspace theme hydration", () => {
     expect(loadLocalWorkspace("theme-user").settings.themeKey).toBe("blueberry-cloud");
   });
 
+  it("uses the shared cached theme instead of a stale signed-out workspace theme", () => {
+    localStorage.setItem("pomodoro-studio:theme", "matcha-cream");
+    localStorage.setItem("pomodoro-studio:signed-out", JSON.stringify({ settings: { themeKey: "blueberry-cloud" } }));
+
+    expect(loadLocalWorkspace("signed-out").settings.themeKey).toBe("matcha-cream");
+  });
+
   it("does not overwrite a saved theme while restoring a user session", async () => {
     localStorage.setItem("pomodoro-studio:signed-in-user", JSON.stringify({ settings: { themeKey: "matcha-cream" } }));
     const { result, rerender } = renderHook(
