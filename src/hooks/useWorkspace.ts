@@ -165,6 +165,7 @@ export const useWorkspace = (userId: string, cloudEnabled: boolean) => {
           browserNotifications: settingsRow.browser_notifications,
           themeKey: normalizeThemeKey(settingsRow.theme_key),
           genderIdentity: settingsRow.gender_identity ?? null,
+          tourCompletedAt: settingsRow.tour_completed_at ?? null,
         } : current.settings,
         feedback: feedbackResult.data ? {
           rating: feedbackResult.data.rating,
@@ -334,6 +335,7 @@ export const useWorkspace = (userId: string, cloudEnabled: boolean) => {
         browser_notifications: next.browserNotifications,
         theme_key: next.themeKey,
         gender_identity: next.genderIdentity,
+        tour_completed_at: next.tourCompletedAt,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       if (error) throw error;

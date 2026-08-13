@@ -1,6 +1,6 @@
 begin;
 
-select plan(20);
+select plan(21);
 
 select has_table('public', 'timer_presets', 'timer_presets exists');
 select has_table('public', 'timer_runs', 'timer_runs exists');
@@ -13,6 +13,7 @@ select col_has_check('public', 'user_feedback', 'rating', 'feedback rating is co
 select col_has_check('public', 'user_feedback', 'favorite_features', 'favorite features are constrained');
 select has_column('public', 'user_settings', 'theme_key', 'theme setting exists');
 select has_column('public', 'user_settings', 'gender_identity', 'optional gender identity setting exists');
+select has_column('public', 'user_settings', 'tour_completed_at', 'product tour completion is recorded');
 select col_default_is('public', 'user_settings', 'theme_key', 'blueberry-cloud', 'theme defaults to Blueberry Cloud');
 select col_has_check('public', 'user_settings', 'theme_key', 'theme setting only accepts curated palettes');
 select has_table('public', 'push_subscriptions', 'push_subscriptions exists');

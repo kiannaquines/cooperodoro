@@ -98,7 +98,7 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
       <div className="tour-actions">
         {stepIndex === 0 ? <button className="text-button" onClick={onClose}>Skip tour</button> : <button className="secondary-button" onClick={() => setStepIndex((current) => current - 1)}><ArrowLeft /> Back</button>}
         {lastStep
-          ? <button className="primary-button" onClick={onClose}><Check /> Start focusing</button>
+          ? <button className="primary-button" onClick={onClose}><Check /> Start</button>
           : <button className="primary-button" onClick={() => setStepIndex((current) => current + 1)}>Next <ArrowRight /></button>}
       </div>
     </section>

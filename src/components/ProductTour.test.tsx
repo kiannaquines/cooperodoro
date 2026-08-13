@@ -21,7 +21,7 @@ describe("ProductTour", () => {
 
     for (let step = 0; step < 5; step += 1) fireEvent.keyDown(window, { key: "ArrowRight" });
     expect(screen.getByRole("dialog")).toHaveTextContent("You are ready to focus");
-    fireEvent.click(screen.getByRole("button", { name: /start focusing/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 

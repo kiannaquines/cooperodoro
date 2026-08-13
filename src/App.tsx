@@ -29,7 +29,6 @@ const phaseLogos: Record<TimerState["phase"], string> = {
   short_break: "/cooper-short-break-chibi.webp",
   long_break: "/cooper-long-break-chibi.webp",
 };
-const GUIDE_VERSION = "v1";
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -121,8 +120,7 @@ export default function App() {
   const preset = useMemo(() => workspace.data.presets.find((item) => item.id === workspace.data.timer.presetId) ?? workspace.data.presets[0] ?? DEFAULT_PRESET, [workspace.data.presets, workspace.data.timer.presetId]);
   const focusSessionCount = completedFocusSessionCount(workspace.data.sessions);
   const profileOnboardingOpen = Boolean(session && !workspace.loading && !workspace.data.settings.genderIdentity);
-  const guideStorageKey = session ? `cooperodoro:guide:${session.user.id}:${GUIDE_VERSION}` : "";
-  const guideShouldOpen = Boolean(session && !workspace.loading && !profileOnboardingOpen && localStorage.getItem(guideStorageKey) !== "complete");
+  const guideShouldOpen = Boolean(session && !workspace.loading && !profileOnboardingOpen && !workspace.data.settings.tourCompletedAt);
   const surveyEligible = Boolean(session && !workspace.loading && shouldPromptForFeedback(workspace.data.feedback, focusSessionCount));
   const surveyCanShow = canShowFeedbackSurvey({ authenticated: Boolean(session), eligible: surveyEligible, profileOnboardingOpen, settingsOpen, timerStatus: workspace.data.timer.status });
   const profileName = session
@@ -278,8 +276,10 @@ export default function App() {
   };
 
   const closeGuide = () => {
-    if (guideStorageKey) localStorage.setItem(guideStorageKey, "complete");
     setGuideOpen(false);
+    if (session && !workspace.data.settings.tourCompletedAt) {
+      void updateSettings({ tourCompletedAt: new Date().toISOString() }).catch((error) => toast(error instanceof Error ? error.message : "The guide completion could not be saved.", "error"));
+    }
   };
 
   const openGuide = () => {

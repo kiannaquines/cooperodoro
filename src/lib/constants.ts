@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   browserNotifications: false,
   themeKey: "blueberry-cloud",
   genderIdentity: null,
+  tourCompletedAt: null,
 };
 
 export const initialTimer = (preset: TimerPreset = DEFAULT_PRESET): TimerState => ({

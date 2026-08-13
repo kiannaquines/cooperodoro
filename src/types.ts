@@ -59,6 +59,7 @@ export interface UserSettings {
   browserNotifications: boolean;
   themeKey: ThemeKey;
   genderIdentity: GenderIdentity | null;
+  tourCompletedAt: string | null;
 }
 
 export type FeedbackFeature = "timer" | "cooper-mascot" | "tasks" | "themes" | "spotify";

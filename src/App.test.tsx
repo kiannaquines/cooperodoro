@@ -114,13 +114,18 @@ describe("cached theme before authentication", () => {
   it("shows the guide once per user and allows replay from settings", async () => {
     localStorage.setItem("pomodoro-studio:guide-user", JSON.stringify({ settings: { genderIdentity: "prefer-not-to-say" } }));
     authMocks.getSession.mockResolvedValue({ user: { id: "guide-user", user_metadata: {} } });
-    render(<App />);
+    const firstVisit = render(<App />);
 
     expect(await screen.findByRole("dialog", { name: "Meet your focus studio" }, { timeout: 2000 })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Skip tour" }));
-    expect(localStorage.getItem("cooperodoro:guide:guide-user:v1")).toBe("complete");
+    await waitFor(() => expect(JSON.parse(localStorage.getItem("pomodoro-studio:guide-user") ?? "{}").settings?.tourCompletedAt).toEqual(expect.any(String)));
 
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    firstVisit.unmount();
+    render(<App />);
+    const settings = await screen.findByRole("button", { name: "Settings" }, { timeout: 2000 });
+    expect(screen.queryByRole("dialog", { name: "Meet your focus studio" })).not.toBeInTheDocument();
+
+    fireEvent.click(settings);
     fireEvent.click(screen.getByRole("button", { name: /show app guide/i }));
     expect(screen.getByRole("dialog", { name: "Meet your focus studio" })).toBeVisible();
   });
