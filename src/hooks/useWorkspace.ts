@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_PRESET, DEFAULT_SETTINGS, initialTimer } from "../lib/constants";
 import { remainingFromEnd } from "../lib/timer";
 import { supabase } from "../lib/supabase";
-import { normalizeThemeKey } from "../lib/themes";
+import { loadCachedThemeKey, normalizeThemeKey, saveCachedThemeKey } from "../lib/themes";
 import type {
   FocusSession,
   SpotifyPlaylist,
@@ -22,20 +22,21 @@ const initialWorkspace = (): WorkspaceData => ({
   tasks: [],
   sessions: [],
   playlists: [],
-  settings: DEFAULT_SETTINGS,
+  settings: { ...DEFAULT_SETTINGS, themeKey: loadCachedThemeKey() },
   feedback: null,
   timer: initialTimer(),
 });
 
 export const loadLocalWorkspace = (userId: string): WorkspaceData => {
   try {
+    const cachedThemeKey = loadCachedThemeKey();
     const saved = localStorage.getItem(localKey(userId));
     if (!saved) return initialWorkspace();
     const parsed = JSON.parse(saved) as Partial<WorkspaceData>;
     return {
       ...initialWorkspace(),
       ...parsed,
-      settings: { ...DEFAULT_SETTINGS, ...parsed.settings, themeKey: normalizeThemeKey(parsed.settings?.themeKey) },
+      settings: { ...DEFAULT_SETTINGS, ...parsed.settings, themeKey: normalizeThemeKey(parsed.settings?.themeKey ?? cachedThemeKey) },
       timer: { ...initialTimer(), ...parsed.timer },
     };
   } catch {
@@ -94,6 +95,10 @@ export const useWorkspace = (userId: string, cloudEnabled: boolean) => {
       // The timer remains usable even when the browser refuses local storage writes.
     }
   }, [data]);
+
+  useEffect(() => {
+    saveCachedThemeKey(data.settings.themeKey);
+  }, [data.settings.themeKey]);
 
   useEffect(() => {
     if (!cloudEnabled || !supabase) {

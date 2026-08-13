@@ -1,5 +1,7 @@
 import type { GenderIdentity, ThemeKey } from "../types";
 
+export const THEME_STORAGE_KEY = "pomodoro-studio:theme";
+
 export interface ThemeTokens {
   pageTop: string;
   pageBottom: string;
@@ -118,6 +120,22 @@ const themeKeys = new Set<string>(COLOR_THEMES.map((theme) => theme.key));
 export const isThemeKey = (value: unknown): value is ThemeKey => typeof value === "string" && themeKeys.has(value);
 
 export const normalizeThemeKey = (value: unknown): ThemeKey => isThemeKey(value) ? value : DEFAULT_THEME_KEY;
+
+export const loadCachedThemeKey = (): ThemeKey => {
+  try {
+    return normalizeThemeKey(localStorage.getItem(THEME_STORAGE_KEY));
+  } catch {
+    return DEFAULT_THEME_KEY;
+  }
+};
+
+export const saveCachedThemeKey = (value: unknown): void => {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, normalizeThemeKey(value));
+  } catch {
+    // Theme selection still works even when storage writes fail.
+  }
+};
 
 export const getColorTheme = (key: unknown): ColorTheme => {
   const normalized = normalizeThemeKey(key);

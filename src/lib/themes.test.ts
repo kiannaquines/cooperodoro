@@ -1,4 +1,4 @@
-import { COLOR_THEMES, DEFAULT_THEME_KEY, getColorTheme, isThemeKey, normalizeThemeKey, recommendedThemeForGender, themeCssVariables } from "./themes";
+import { COLOR_THEMES, DEFAULT_THEME_KEY, THEME_STORAGE_KEY, getColorTheme, isThemeKey, loadCachedThemeKey, normalizeThemeKey, recommendedThemeForGender, saveCachedThemeKey, themeCssVariables } from "./themes";
 import { describe, expect, it } from "vitest";
 
 const luminance = (hex: string) => {
@@ -51,5 +51,21 @@ describe("color themes", () => {
       }
       expect(contrast(tokens.muted, tokens.surface), `${label}: muted`).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  it("loads and saves the shared cached theme key", () => {
+    const storage = new Map<string, string>();
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => storage.set(key, value),
+      },
+    });
+
+    saveCachedThemeKey("matcha-cream");
+
+    expect(storage.get(THEME_STORAGE_KEY)).toBe("matcha-cream");
+    expect(loadCachedThemeKey()).toBe("matcha-cream");
   });
 });
