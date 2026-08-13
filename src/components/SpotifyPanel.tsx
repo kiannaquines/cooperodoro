@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ExternalLink, LogIn, Music2, Pause, Pencil, Play, Plus, SkipBack, SkipForward, Trash2, Unplug } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Music2, Pause, Pencil, Play, Plus, SkipBack, SkipForward, Trash2, Unplug } from "lucide-react";
 import { useState } from "react";
 import { useSpotifyPlayer } from "../hooks/useSpotifyPlayer";
 import { parseSpotifyPlaylist } from "../lib/spotify";
@@ -52,7 +52,15 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
           <Music2 />
           <strong>Full Spotify playback</strong>
           <span>Connect a Premium account to play complete songs here.</span>
-          <button className="spotify-login" disabled={!isSpotifyConfigured} onClick={() => void beginSpotifyLogin().catch((loginError) => setError(loginError.message))}><LogIn /> Connect Spotify</button>
+          <button className="spotify-login" disabled={!isSpotifyConfigured} onClick={() => void beginSpotifyLogin().catch((loginError) => setError(loginError.message))}>
+            <svg className="spotify-mark" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="11" fill="currentColor" />
+              <path d="M6.2 8.7c4.1-1.2 8.2-.9 11.7 1" fill="none" stroke="#1ed760" strokeWidth="1.8" strokeLinecap="round" />
+              <path d="M6.9 12c3.5-.9 7-.6 10 1" fill="none" stroke="#1ed760" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M7.6 15.1c2.8-.6 5.7-.3 8.2.8" fill="none" stroke="#1ed760" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            Connect Spotify
+          </button>
           {!isSpotifyConfigured && <small>Add your Spotify client ID to enable login.</small>}
         </div>
       ) : (

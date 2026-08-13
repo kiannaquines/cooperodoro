@@ -86,7 +86,9 @@ describe("cached theme before authentication", () => {
     expect(screen.queryByRole("button", { name: /settings/i })).not.toBeInTheDocument();
 
     expect(await screen.findByRole("button", { name: /settings/i }, { timeout: 2000 })).toBeVisible();
+    expect(screen.getByText("No tasks yet")).toBeVisible();
     expect(screen.getByText("No playlists yet")).toBeVisible();
+    expect(screen.getByRole("button", { name: /connect spotify/i }).querySelector(".spotify-mark")).toBeInTheDocument();
   });
 
   it("keeps a newly selected theme on the login screen after sign-out", async () => {

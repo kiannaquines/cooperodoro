@@ -7,7 +7,9 @@ describe("AuthScreen", () => {
     const google = vi.fn();
     const facebook = vi.fn();
     render(<AuthScreen configured onGoogle={google} onFacebook={facebook} />);
-    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
+    const googleButton = screen.getByRole("button", { name: /continue with google/i });
+    expect(googleButton.querySelector(".google-mark")).toBeInTheDocument();
+    fireEvent.click(googleButton);
     fireEvent.click(screen.getByRole("button", { name: /continue with facebook/i }));
     expect(google).toHaveBeenCalledOnce();
     expect(facebook).toHaveBeenCalledOnce();

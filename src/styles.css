@@ -91,6 +91,10 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"])::placeholde
 .edit-task { flex: 1; }
 .edit-task input { padding: 6px 8px; }
 .empty-state { color: #a9a094; font-size: 12px; line-height: 1.5; text-align: center; padding: 14px 6px; }
+.task-empty { min-height: 128px; border: 2px dashed var(--theme-primary-deep); border-radius: 16px; background: color-mix(in srgb, var(--theme-surface-strong) 45%, transparent); display: grid; justify-items: center; align-content: center; gap: 5px; }
+.task-empty svg { width: 24px; margin-bottom: 3px; color: var(--theme-primary-deep); }
+.task-empty strong { color: var(--theme-ink); font-family: "Fredoka", sans-serif; font-size: 14px; }
+.task-empty span { max-width: 240px; font-size: 10px; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .stats-grid div { min-height: 82px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); border-radius: 13px; padding: 11px; display: grid; grid-template-columns: 20px 1fr; align-items: center; }
 .stats-grid svg { color: var(--amber); width: 15px; }
@@ -108,6 +112,7 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"])::placeholde
 .spotify-login { min-height: 40px; margin-top: 6px; padding: 0 15px; border: 0; border-radius: 999px; background: #1ed760; color: #123b20; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 0 #159b46; }
 .spotify-login:disabled { opacity: .55; cursor: not-allowed; }
 .spotify-login svg { width: 16px; }
+.spotify-login .spotify-mark { width: 19px; height: 19px; }
 .now-playing { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .now-playing img, .track-placeholder { flex: 0 0 58px; width: 58px; height: 58px; border-radius: 12px; object-fit: cover; background: var(--theme-tertiary); display: grid; place-items: center; }
 .now-playing > div:last-child { min-width: 0; display: flex; flex-direction: column; }
@@ -215,6 +220,7 @@ input[type="range"] { accent-color: var(--amber); padding: 0; }
 .auth-actions { display: grid; gap: 12px; }
 .auth-button { width: 100%; min-height: 52px; border: 0; cursor: pointer; transition: transform .15s ease, filter .15s ease, box-shadow .15s ease; }
 .auth-card .auth-button { color: var(--theme-ink); background: linear-gradient(145deg, color-mix(in srgb, var(--theme-primary) 68%, var(--theme-surface-strong)), var(--theme-primary)); border-radius: 15px; box-shadow: 0 5px 0 var(--theme-primary-deep); font-weight: 900; }
+.auth-card .google-mark { width: 21px; height: 21px; }
 .auth-card .auth-button:hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
 .auth-card .auth-button:active:not(:disabled) { box-shadow: 0 2px 0 var(--theme-primary-deep); transform: translateY(3px); }
 .auth-card .auth-button:disabled { cursor: not-allowed; filter: grayscale(.25); opacity: .55; }

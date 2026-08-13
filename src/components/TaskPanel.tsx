@@ -1,4 +1,4 @@
-import { Check, Circle, Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, Circle, ListTodo, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { TaskItem } from "../types";
 
@@ -29,7 +29,11 @@ export function TaskPanel({ tasks, activeTaskId, onSelect, onAdd, onUpdate, onDe
         <button className="small-primary" aria-label="Add task"><Plus /></button>
       </form>
       <div className="task-list">
-        {tasks.length === 0 && <p className="empty-state">A clear list makes a calmer session.</p>}
+        {tasks.length === 0 && <div className="task-empty empty-state">
+          <ListTodo />
+          <strong>No tasks yet</strong>
+          <span>Add your first task above to start a focused session.</span>
+        </div>}
         {tasks.map((task) => (
           <div className={`task-row ${task.completed ? "done" : ""} ${activeTaskId === task.id ? "active" : ""}`} key={task.id}>
             <button className="task-check" onClick={() => void onUpdate(task.id, { completed: !task.completed })} aria-label={task.completed ? `Mark ${task.title} incomplete` : `Complete ${task.title}`}>
