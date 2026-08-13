@@ -317,6 +317,11 @@ export default function App() {
           <path d="M0 58 C120 112 240 4 360 58 S600 112 720 58 S960 4 1080 58 S1320 112 1440 58 S1680 4 1800 58 S2040 112 2160 58 S2400 4 2520 58 S2760 112 2880 58 L2880 0 L0 0 Z" />
         </svg>
       </div>
+      <div className="theme-wave theme-wave-lower" aria-hidden="true">
+        <svg viewBox="0 0 2880 170" preserveAspectRatio="none">
+          <path d="M0 112 C130 36 300 24 450 98 C630 184 790 136 930 54 C1080 -34 1260 28 1420 116 C1590 208 1780 138 1920 48 C2070 -46 2250 30 2410 112 C2580 196 2740 110 2880 72 L2880 170 L0 170 Z" />
+        </svg>
+      </div>
       <header className="topbar">
         <div className="brand"><div className="brand-mark"><img src={activeCooperLogo} alt="" /></div><div><strong>Cooperodoro</strong><span>Focus with Cooper</span></div></div>
         <div className="top-actions">
