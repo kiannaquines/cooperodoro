@@ -125,7 +125,7 @@ export const getSpotifyAccessToken = async (): Promise<string | null> => {
 
 export const disconnectSpotify = (): void => localStorage.removeItem(TOKEN_KEY);
 
-export const spotifyApi = async (path: string, init: RequestInit = {}): Promise<Response> => {
+export const spotifyApi = async (path: string, init: RequestInit = {}, forbiddenMessage = "Spotify did not allow this request."): Promise<Response> => {
   const accessToken = await getSpotifyAccessToken();
   if (!accessToken) throw new Error("Connect Spotify first.");
   const response = await fetch(`https://api.spotify.com/v1${path}`, {
@@ -133,8 +133,8 @@ export const spotifyApi = async (path: string, init: RequestInit = {}): Promise<
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", ...init.headers },
   });
   if (!response.ok) {
-    if (response.status === 403) throw new Error("Spotify Premium is required for full playback.");
-    throw new Error(`Spotify playback failed (${response.status}).`);
+    if (response.status === 403) throw new Error(forbiddenMessage);
+    throw new Error(`Spotify request failed (${response.status}).`);
   }
   return response;
 };

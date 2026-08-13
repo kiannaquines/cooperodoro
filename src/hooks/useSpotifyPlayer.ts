@@ -64,7 +64,7 @@ export const useSpotifyPlayer = (enabled: boolean) => {
     await spotifyApi(`/me/player/play?device_id=${encodeURIComponent(deviceId)}`, {
       method: "PUT",
       body: JSON.stringify({ context_uri: `spotify:playlist:${playlistId}` }),
-    });
+    }, "Spotify Premium is required for full playback.");
   }, []);
 
   return {
