@@ -63,6 +63,7 @@ describe("cached theme before authentication", () => {
     render(<App />);
 
     fireEvent.click(await screen.findByRole("button", { name: /settings/i }));
+    expect(document.title).toBe("25:00 · Cooperodoro");
     fireEvent.click(screen.getByRole("radio", { name: "Matcha Cream" }));
     await waitFor(() => expect(document.querySelector(".app-shell")).toHaveAttribute("data-theme", "matcha-cream"));
     expect(localStorage.getItem("pomodoro-studio:theme")).toBe("matcha-cream");
@@ -71,5 +72,6 @@ describe("cached theme before authentication", () => {
 
     const loginTheme = (await screen.findByRole("main")).parentElement;
     expect(loginTheme).toHaveAttribute("data-theme", "matcha-cream");
+    expect(document.title).toBe("Cooperodoro");
   });
 });

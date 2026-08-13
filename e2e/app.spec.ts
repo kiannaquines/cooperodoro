@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("runs the core productivity flow", async ({ page }) => {
-  await expect(page.getByRole("heading", { name: /make space for what matters/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /focus session timer/i })).toBeAttached();
   await page.getByLabel("New task title").fill("Write project outline");
   await page.getByLabel("Add task").click();
   await page.getByRole("button", { name: "Write project outline", exact: true }).click();

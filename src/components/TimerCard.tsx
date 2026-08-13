@@ -1,4 +1,5 @@
-import { CheckCircle2, Pause, Play, RefreshCw, SkipForward } from "lucide-react";
+import { CheckCircle2, Maximize2, Minimize2, Pause, Play, RefreshCw, SkipForward } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import type { TaskItem, TimerPhase, TimerState } from "../types";
 import { formatClock } from "../lib/timer";
 
@@ -18,10 +19,10 @@ interface Props {
   onCustomTimer: () => void;
 }
 
-const labels: Record<TimerPhase, { eyebrow: string; title: string }> = {
-  focus: { eyebrow: "Focus session", title: "Make space for what matters." },
-  short_break: { eyebrow: "Short break", title: "Step back. Breathe." },
-  long_break: { eyebrow: "Long break", title: "You earned a longer pause." },
+const labels: Record<TimerPhase, string> = {
+  focus: "Focus session",
+  short_break: "Short break",
+  long_break: "Long break",
 };
 
 const runningMascots: Record<TimerPhase, { src: string; alt: string }> = {
@@ -45,6 +46,8 @@ const studioClock = (seconds: number) => {
 
 export function TimerCard({ timer, tasks, rounds, onTaskChange, onStart, onPause, onReset, onSkip, onAcknowledge, onPhaseChange, autoStart, onAutoStartChange, onCustomTimer }: Props) {
   const meta = labels[timer.phase];
+  const cardRef = useRef<HTMLElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
   const progress = timer.durationSeconds > 0 ? Math.min(100, Math.max(0, ((timer.durationSeconds - timer.remainingSeconds) / timer.durationSeconds) * 100)) : 0;
   const isRunning = timer.status === "running";
   const mascot = runningMascots[timer.phase];
@@ -53,10 +56,20 @@ export function TimerCard({ timer, tasks, rounds, onTaskChange, onStart, onPause
     : timer.status === "awaiting_acknowledgement"
       ? "You did it! High paw!"
       : idleMessages[timer.phase];
+  useEffect(() => {
+    const onFullscreenChange = () => setFullscreen(document.fullscreenElement === cardRef.current);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement === cardRef.current) await document.exitFullscreen();
+    else await cardRef.current?.requestFullscreen();
+  };
   return (
-    <section className="timer-card glass-panel" aria-labelledby="timer-heading">
+    <section ref={cardRef} className="timer-card glass-panel" aria-labelledby="timer-heading">
       <div className="timer-toolbar">
         <button className="custom-timer-button" onClick={onCustomTimer}>Custom timer</button>
+        <button className="fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? "Exit full screen" : "Enter full screen"}>{fullscreen ? <Minimize2 /> : <Maximize2 />}<span>{fullscreen ? "Exit full screen" : "Full screen"}</span></button>
       </div>
       <div className="phase-tabs" role="tablist" aria-label="Timer phase">
         <button role="tab" aria-selected={timer.phase === "focus"} className={timer.phase === "focus" ? "active" : ""} disabled={timer.status === "running"} onClick={() => onPhaseChange("focus")}>Pomodoro</button>
@@ -75,10 +88,10 @@ export function TimerCard({ timer, tasks, rounds, onTaskChange, onStart, onPause
         </div>
         <div className="timer-controls-panel">
           <div className="timer-meta">
-            <span className="eyebrow">{meta.eyebrow}</span>
+            <span className="eyebrow">{meta}</span>
             <span className="round-pill">Round {timer.round} of {rounds}</span>
           </div>
-          <h1 id="timer-heading" className="timer-heading">{timer.status === "awaiting_acknowledgement" ? "Session complete." : meta.title}</h1>
+          <h1 id="timer-heading" className="visually-hidden">{timer.status === "awaiting_acknowledgement" ? "Session complete." : `${meta} timer`}</h1>
           <div className="clock-wrap" aria-live="polite">
             <div className="clock" aria-label={`${Math.floor(timer.remainingSeconds / 60)} minutes ${timer.remainingSeconds % 60} seconds remaining`}>
               <span className="full-clock">{studioClock(timer.remainingSeconds)}</span>

@@ -16,7 +16,7 @@ import { completeAuthCallback, getSession, isSupabaseConfigured, signInWithFaceb
 import { loadCachedThemeKey, themeCssVariables } from "./lib/themes";
 import { completeSpotifyLogin } from "./lib/spotifyAuth";
 import { canShowFeedbackSurvey, completedFocusSessionCount, shouldPromptForFeedback } from "./lib/feedback";
-import { moveToNextPhase, phaseDuration, remainingFromEnd, switchTimerPhase } from "./lib/timer";
+import { formatClock, moveToNextPhase, phaseDuration, remainingFromEnd, switchTimerPhase } from "./lib/timer";
 import type { CSSProperties } from "react";
 import type { TimerState } from "./types";
 import "./styles.css";
@@ -71,6 +71,10 @@ export default function App() {
   useEffect(() => {
     if (session || testAuthenticated) setBrowserThemeKey(workspace.data.settings.themeKey);
   }, [session, testAuthenticated, workspace.data.settings.themeKey]);
+
+  useEffect(() => {
+    document.title = session || testAuthenticated ? `${formatClock(workspace.data.timer.remainingSeconds)} · Cooperodoro` : "Cooperodoro";
+  }, [session, testAuthenticated, workspace.data.timer.remainingSeconds]);
 
   useEffect(() => { timerRef.current = workspace.data.timer; }, [workspace.data.timer]);
   const preset = useMemo(() => workspace.data.presets.find((item) => item.id === workspace.data.timer.presetId) ?? workspace.data.presets[0] ?? DEFAULT_PRESET, [workspace.data.presets, workspace.data.timer.presetId]);
