@@ -64,49 +64,53 @@ export function TimerCard({ timer, tasks, rounds, onTaskChange, onStart, onPause
         <button role="tab" aria-selected={timer.phase === "long_break"} className={timer.phase === "long_break" ? "active" : ""} disabled={timer.status === "running"} onClick={() => onPhaseChange("long_break")}>Long break</button>
         <label className="loop-tab"><input type="checkbox" checked={autoStart} onChange={(event) => onAutoStartChange(event.target.checked)} /> Loop</label>
       </div>
-      <div className="timer-meta">
-        <span className="eyebrow">{meta.eyebrow}</span>
-        <span className="round-pill">Round {timer.round} of {rounds}</span>
-      </div>
-      <h1 id="timer-heading" className="visually-hidden">{timer.status === "awaiting_acknowledgement" ? "Session complete." : meta.title}</h1>
-      <div className={`mascot-stage ${isRunning ? "is-running" : "is-chatting"} phase-${timer.phase}`}>
-        {!isRunning && <div className="cooper-speech" role="status">{comicMessage}</div>}
-        <img
-          className="cooper-mascot"
-          src={isRunning ? mascot.src : "/cooper-idle-chibi.webp"}
-          alt={isRunning ? mascot.alt : "Chibi Cooper waving beside a small focus timer"}
-        />
-      </div>
-      <div className="clock-wrap" aria-live="polite">
-        <div className="clock" aria-label={`${Math.floor(timer.remainingSeconds / 60)} minutes ${timer.remainingSeconds % 60} seconds remaining`}>
-          <span className="full-clock">{studioClock(timer.remainingSeconds)}</span>
-          <span className="compact-clock">{formatClock(timer.remainingSeconds)}</span>
+      <div className="timer-focus-layout">
+        <div className={`mascot-stage ${isRunning ? "is-running" : "is-chatting"} phase-${timer.phase}`}>
+          {!isRunning && <div className="cooper-speech" role="status">{comicMessage}</div>}
+          <img
+            className="cooper-mascot"
+            src={isRunning ? mascot.src : "/cooper-idle-chibi.webp"}
+            alt={isRunning ? mascot.alt : "Chibi Cooper waving beside a small focus timer"}
+          />
         </div>
-        <div className="progress-track" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
-      </div>
+        <div className="timer-controls-panel">
+          <div className="timer-meta">
+            <span className="eyebrow">{meta.eyebrow}</span>
+            <span className="round-pill">Round {timer.round} of {rounds}</span>
+          </div>
+          <h1 id="timer-heading" className="timer-heading">{timer.status === "awaiting_acknowledgement" ? "Session complete." : meta.title}</h1>
+          <div className="clock-wrap" aria-live="polite">
+            <div className="clock" aria-label={`${Math.floor(timer.remainingSeconds / 60)} minutes ${timer.remainingSeconds % 60} seconds remaining`}>
+              <span className="full-clock">{studioClock(timer.remainingSeconds)}</span>
+              <span className="compact-clock">{formatClock(timer.remainingSeconds)}</span>
+            </div>
+            <div className="progress-track" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
+          </div>
 
-      <label className="task-picker">
-        <span>Working on</span>
-        <select value={timer.taskId ?? ""} onChange={(event) => onTaskChange(event.target.value || null)} disabled={timer.status === "running"}>
-          <option value="">No task selected</option>
-          {tasks.filter((task) => !task.completed).map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}
-        </select>
-      </label>
+          <label className="task-picker">
+            <span>Working on</span>
+            <select value={timer.taskId ?? ""} onChange={(event) => onTaskChange(event.target.value || null)} disabled={timer.status === "running"}>
+              <option value="">No task selected</option>
+              {tasks.filter((task) => !task.completed).map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}
+            </select>
+          </label>
 
-      {timer.status === "awaiting_acknowledgement" ? (
-        <button className="primary-button large" onClick={onAcknowledge}><CheckCircle2 size={19} /> Continue</button>
-      ) : (
-        <div className="timer-actions">
-          <button className="icon-button" onClick={onReset} aria-label="Reset timer"><RefreshCw /></button>
-          {timer.status === "running" ? (
-            <button className="primary-button large" onClick={onPause}><Pause fill="currentColor" /> Pause</button>
+          {timer.status === "awaiting_acknowledgement" ? (
+            <button className="primary-button large" onClick={onAcknowledge}><CheckCircle2 size={19} /> Continue</button>
           ) : (
-            <button className="primary-button large" onClick={onStart}><Play fill="currentColor" /> {timer.status === "paused" ? "Resume" : "Start"}</button>
+            <div className="timer-actions">
+              <button className="icon-button" onClick={onReset} aria-label="Reset timer"><RefreshCw /></button>
+              {timer.status === "running" ? (
+                <button className="primary-button large" onClick={onPause}><Pause fill="currentColor" /> Pause</button>
+              ) : (
+                <button className="primary-button large" onClick={onStart}><Play fill="currentColor" /> {timer.status === "paused" ? "Resume" : "Start"}</button>
+              )}
+              <button className="icon-button" onClick={onSkip} aria-label="Skip this phase"><SkipForward /></button>
+            </div>
           )}
-          <button className="icon-button" onClick={onSkip} aria-label="Skip this phase"><SkipForward /></button>
+          <p className="shortcut-hint"><kbd>Space</kbd> start / pause · <kbd>R</kbd> reset · <kbd>S</kbd> skip</p>
         </div>
-      )}
-      <p className="shortcut-hint"><kbd>Space</kbd> start / pause · <kbd>R</kbd> reset · <kbd>S</kbd> skip</p>
+      </div>
     </section>
   );
 }

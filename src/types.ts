@@ -50,7 +50,7 @@ export interface SpotifyPlaylist {
   active: boolean;
 }
 
-export type ThemeKey = "strawberry-milk" | "blueberry-cloud" | "lavender-dream" | "matcha-cream" | "midnight-navy" | "forest-trail" | "graphite-blue";
+export type ThemeKey = "strawberry-milk" | "blueberry-cloud" | "lavender-dream" | "matcha-cream" | "cherry-ember" | "midnight-navy" | "forest-trail" | "graphite-blue";
 export type GenderIdentity = "woman" | "man" | "non-binary" | "prefer-not-to-say";
 
 export interface UserSettings {

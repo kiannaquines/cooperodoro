@@ -13,9 +13,9 @@ const contrast = (foreground: string, background: string) => {
 };
 
 describe("color themes", () => {
-  it("defines seven unique, complete palettes", () => {
-    expect(COLOR_THEMES).toHaveLength(7);
-    expect(new Set(COLOR_THEMES.map((theme) => theme.key))).toHaveLength(7);
+  it("defines eight unique, complete palettes", () => {
+    expect(COLOR_THEMES).toHaveLength(8);
+    expect(new Set(COLOR_THEMES.map((theme) => theme.key))).toHaveLength(8);
     for (const theme of COLOR_THEMES) {
       expect(theme.swatches).toHaveLength(3);
       expect(Object.keys(theme.tokens)).toHaveLength(21);
@@ -25,6 +25,7 @@ describe("color themes", () => {
 
   it("normalizes unsupported values to Blueberry Cloud", () => {
     expect(isThemeKey("matcha-cream")).toBe(true);
+    expect(isThemeKey("cherry-ember")).toBe(true);
     expect(isThemeKey("unknown-theme")).toBe(false);
     expect(normalizeThemeKey("unknown-theme")).toBe(DEFAULT_THEME_KEY);
     expect(getColorTheme(null).key).toBe(DEFAULT_THEME_KEY);

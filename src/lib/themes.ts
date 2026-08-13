@@ -81,6 +81,17 @@ export const COLOR_THEMES: readonly ColorTheme[] = [
     },
   },
   {
+    key: "cherry-ember",
+    label: "Cherry Ember",
+    swatches: ["#efa0a0", "#c86b7b", "#efbd9f"],
+    tokens: {
+      pageTop: "#f9dada", pageBottom: "#fff7f4", surface: "#fff7f4", surfaceStrong: "#fffdfb", topbar: "rgba(255,250,248,.88)",
+      primary: "#efa0a0", primaryDeep: "#b84f5a", secondary: "#d9a1b0", secondaryDeep: "#9e596d", tertiary: "#efbd9f", tertiaryDeep: "#a86643",
+      ink: "#48282d", muted: "#6d4d52", border: "#ebc9c8", shadow: "#e7c3c3", activeBackground: "#f8e0df",
+      taskCard: "#f8d8d5", statsCard: "#f3dfe4", spotifyCard: "#f8e4d8", blobA: "#efb7b7", blobB: "#e7c0c9",
+    },
+  },
+  {
     key: "midnight-navy",
     label: "Midnight Navy",
     swatches: ["#345995", "#5f7db8", "#d49b5b"],

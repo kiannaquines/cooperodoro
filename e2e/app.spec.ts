@@ -57,3 +57,17 @@ test("switches and persists curated color themes", async ({ page }) => {
   await page.reload();
   await expect(page.locator(".app-shell")).toHaveAttribute("data-theme", "matcha-cream");
 });
+
+test("presents the timer as a hero before the supporting dashboard", async ({ page }) => {
+  const hero = page.locator(".center-column");
+  const dashboard = page.locator(".support-dashboard");
+
+  const viewportHeight = page.viewportSize()?.height ?? 0;
+  const heroBox = await hero.boundingBox();
+  const dashboardBox = await dashboard.boundingBox();
+
+  expect(heroBox?.height ?? 0).toBeGreaterThanOrEqual(viewportHeight - 100);
+  expect(dashboardBox?.y ?? 0).toBeGreaterThanOrEqual((heroBox?.y ?? 0) + (heroBox?.height ?? 0));
+  await expect(page.locator(".timer-focus-layout .cooper-mascot")).toBeVisible();
+  await expect(page.locator(".timer-controls-panel .clock")).toBeVisible();
+});
