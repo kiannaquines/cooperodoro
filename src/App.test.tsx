@@ -68,8 +68,7 @@ describe("cached theme before authentication", () => {
 
     render(<App />);
 
-    fireEvent.animationEnd(await screen.findByRole("status"), { animationName: "welcome-screen-fade" });
-    expect(await screen.findByLabelText("Signed in as Cooper User")).toBeVisible();
+    expect(await screen.findByLabelText("Signed in as Cooper User", {}, { timeout: 2000 })).toBeVisible();
     expect(screen.getByText("Cooper User")).toBeVisible();
     expect(screen.getByText("cooper@example.com")).toBeVisible();
   });
@@ -86,8 +85,8 @@ describe("cached theme before authentication", () => {
     expect(transition).toHaveTextContent("Welcome back!");
     expect(screen.queryByRole("button", { name: /settings/i })).not.toBeInTheDocument();
 
-    fireEvent.animationEnd(transition, { animationName: "welcome-screen-fade" });
-    expect(await screen.findByRole("button", { name: /settings/i })).toBeVisible();
+    expect(await screen.findByRole("button", { name: /settings/i }, { timeout: 2000 })).toBeVisible();
+    expect(screen.getByText("No playlists yet")).toBeVisible();
   });
 
   it("keeps a newly selected theme on the login screen after sign-out", async () => {
@@ -95,8 +94,7 @@ describe("cached theme before authentication", () => {
     authMocks.getSession.mockResolvedValue({ user: { id: "theme-user" } });
     render(<App />);
 
-    fireEvent.animationEnd(await screen.findByRole("status"), { animationName: "welcome-screen-fade" });
-    fireEvent.click(await screen.findByRole("button", { name: /settings/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /settings/i }, { timeout: 2000 }));
     expect(document.title).toBe("25:00 · Cooperodoro");
     fireEvent.click(screen.getByRole("radio", { name: "Matcha Cream" }));
     await waitFor(() => expect(document.querySelector(".app-shell")).toHaveAttribute("data-theme", "matcha-cream"));

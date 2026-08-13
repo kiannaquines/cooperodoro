@@ -72,6 +72,11 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
         </div>
       )}
       <div className="playlist-list">
+        {playlists.length === 0 && <div className="spotify-empty">
+          <Music2 />
+          <strong>No playlists yet</strong>
+          <span>Add a Spotify playlist below to set the mood.</span>
+        </div>}
         {playlists.map((playlist) => (
           <div className={`playlist-row ${playlist.id === active?.id ? "active" : ""}`} key={playlist.id}>
             <button className="playlist-name" onClick={() => { void onActivate(playlist.id); if (connected && player.ready) void player.playPlaylist(playlist.playlistId).catch((playError) => setError(playError.message)); }}>{playlist.name}</button>
