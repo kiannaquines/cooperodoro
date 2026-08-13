@@ -384,24 +384,37 @@ input[type="range"] { accent-color: var(--amber); padding: 0; }
 .saved-playlist-row .playlist-name strong, .saved-playlist-row .playlist-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .saved-playlist-row .playlist-name strong { color: var(--theme-ink); font-size: 11px; }
 .saved-playlist-row .playlist-name span { color: var(--theme-muted); font-size: 8px; }
-.spotify-recommendations { margin-top: 7px; padding-top: 13px; border-top: 2px dashed var(--theme-tertiary-deep); display: grid; gap: 7px; }
+.spotify-recommendations { padding: 13px; border: 2px solid color-mix(in srgb, var(--theme-tertiary-deep) 58%, var(--theme-surface-strong)); border-radius: 18px; background: color-mix(in srgb, var(--theme-surface-strong) 38%, transparent); display: grid; gap: 8px; }
 .recommendation-heading { display: flex; align-items: center; justify-content: space-between; }
-.recommendation-heading > div { display: flex; align-items: center; gap: 6px; color: var(--theme-ink); font-size: 11px; font-weight: 900; }
+.recommendation-heading > div { display: flex; align-items: center; gap: 7px; color: var(--theme-ink); font-size: 12px; font-weight: 900; }
 .recommendation-heading svg { width: 15px; color: var(--theme-tertiary-deep); }
-.recommendation-heading button { width: 29px; height: 29px; border: 0; border-radius: 50%; background: var(--theme-surface-strong); color: var(--theme-muted); cursor: pointer; display: grid; place-items: center; }
+.recommendation-heading button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--theme-surface-strong); color: var(--theme-muted); cursor: pointer; display: grid; place-items: center; transition: transform .16s ease, color .16s ease; }
+.recommendation-heading button:hover { color: var(--theme-tertiary-deep); transform: rotate(20deg); }
 .recommendation-heading button:disabled { opacity: .5; cursor: wait; }
-.spotify-recommendations > small { margin-top: -5px; color: var(--theme-muted); font-size: 9px; }
-.recommendation-row { min-width: 0; min-height: 52px; padding: 5px; border: 2px solid var(--theme-surface-strong); border-radius: 13px; background: color-mix(in srgb, var(--theme-surface-strong) 72%, transparent); display: grid; grid-template-columns: 40px minmax(0, 1fr) 28px 28px; align-items: center; gap: 6px; }
-.recommendation-row > img, .recommendation-art { width: 40px; height: 40px; border-radius: 9px; background: var(--theme-tertiary); object-fit: contain; display: grid; place-items: center; }
+.spotify-recommendations > small { margin-top: -4px; color: var(--theme-muted); font-size: 9px; }
+.recommendation-row { min-width: 0; min-height: 58px; padding: 6px; border: 2px solid var(--theme-surface-strong); border-radius: 15px; background: color-mix(in srgb, var(--theme-surface-strong) 78%, transparent); display: grid; grid-template-columns: 44px minmax(0, 1fr) 30px 30px; align-items: center; gap: 7px; transition: border-color .16s ease, transform .16s ease; }
+.recommendation-row:hover { border-color: color-mix(in srgb, var(--theme-tertiary-deep) 52%, var(--theme-surface-strong)); transform: translateY(-1px); }
+.recommendation-row > img, .recommendation-art { width: 44px; height: 44px; border-radius: 10px; background: var(--theme-tertiary); object-fit: cover; display: grid; place-items: center; }
 .recommendation-art svg { width: 17px; }
 .recommendation-row > div:nth-child(2) { min-width: 0; display: grid; }
 .recommendation-row strong, .recommendation-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.recommendation-row strong { font-size: 10px; }
-.recommendation-row span { color: var(--theme-muted); font-size: 8px; }
-.recommendation-row > a, .recommendation-row > button { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: var(--theme-surface-strong); color: var(--theme-muted); cursor: pointer; display: grid; place-items: center; }
+.recommendation-row strong { font-size: 10px; line-height: 1.25; }
+.recommendation-row span { margin-top: 2px; color: var(--theme-muted); font-size: 8px; }
+.recommendation-row > a, .recommendation-row > button { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: var(--theme-surface-strong); color: var(--theme-muted); cursor: pointer; display: grid; place-items: center; transition: transform .16s ease; }
 .recommendation-row > button { background: var(--theme-tertiary); color: var(--theme-ink); }
+.recommendation-row > a:hover, .recommendation-row > button:hover { transform: translateY(-2px); }
 .recommendation-row > a svg, .recommendation-row > button svg { width: 13px; }
 .recommendation-loading { min-height: 48px; color: var(--theme-muted); font-size: 10px; display: grid; place-items: center; text-align: center; }
+.spotify-add-form { padding: 13px; border: 2px solid var(--theme-border); border-radius: 18px; background: color-mix(in srgb, var(--theme-surface-strong) 48%, transparent); }
+.spotify-add-heading { margin-bottom: 2px; }
+.spotify-add-heading > div { display: flex; align-items: center; gap: 7px; color: var(--theme-ink); font-size: 12px; font-weight: 900; }
+.spotify-add-heading svg { width: 15px; color: var(--theme-tertiary-deep); }
+.spotify-add-heading small { display: block; margin-top: 3px; color: var(--theme-muted); font-size: 8px; }
+.spotify-add-form label { display: grid; gap: 4px; color: var(--theme-muted); font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; }
+.cooper-style .spotify-add-form input { min-height: 40px; padding: 8px 11px; border-radius: 12px; font-size: 10px; text-transform: none; letter-spacing: 0; }
+.spotify-add-button { min-height: 40px; margin-top: 2px; border: 0; border-radius: 12px; background: var(--theme-tertiary); color: var(--theme-ink); box-shadow: 0 4px 0 var(--theme-tertiary-deep); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-size: 10px; font-weight: 900; }
+.spotify-add-button:hover { transform: translateY(-1px); box-shadow: 0 5px 0 var(--theme-tertiary-deep); }
+.spotify-add-button svg { width: 15px; }
 .cooper-style .drawer-backdrop { background: rgba(80,58,94,.28); }
 .cooper-style .settings-drawer { background: var(--theme-surface); color: var(--theme-ink); border-left: 3px solid var(--theme-border); box-shadow: -18px 0 55px rgba(72,57,83,.18); }
 .cooper-style .settings-drawer h2, .cooper-style .settings-drawer h3 { font-family: "Fredoka", sans-serif; color: var(--theme-ink); }

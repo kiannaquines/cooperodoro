@@ -149,9 +149,11 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
             )) : !recommendationsError && <div className="recommendation-loading">No new matches yet. Try refreshing.</div>}
             {recommendationsError && <p className="field-error" role="alert">{recommendationsError}</p>}
         </div>}
-        <form className="stacked-form" onSubmit={submit}>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Playlist name" maxLength={100} />
-          <div className="inline-form"><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://open.spotify.com/playlist/..." /><button className="small-primary" aria-label="Add Spotify playlist"><Plus /></button></div>
+        <form className="stacked-form spotify-add-form" onSubmit={submit}>
+          <div className="spotify-add-heading"><div><Plus /><span>Add a playlist</span></div><small>Save a Spotify playlist to your ambience library.</small></div>
+          <label><span>Playlist name</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Deep focus" maxLength={100} /></label>
+          <label><span>Spotify link</span><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="open.spotify.com/playlist/..." /></label>
+          <button className="spotify-add-button" type="submit"><Plus /> Add playlist</button>
           {error && <p className="field-error" role="alert">{error}</p>}
         </form>
       </div>
