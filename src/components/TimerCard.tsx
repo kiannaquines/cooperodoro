@@ -57,13 +57,14 @@ export function TimerCard({ timer, tasks, rounds, onTaskChange, onStart, onPause
       ? "You did it! High paw!"
       : idleMessages[timer.phase];
   useEffect(() => {
-    const onFullscreenChange = () => setFullscreen(document.fullscreenElement === cardRef.current);
+    const onFullscreenChange = () => setFullscreen(document.fullscreenElement === cardRef.current?.closest(".app-shell"));
     document.addEventListener("fullscreenchange", onFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, []);
   const toggleFullscreen = async () => {
-    if (document.fullscreenElement === cardRef.current) await document.exitFullscreen();
-    else await cardRef.current?.requestFullscreen();
+    const appShell = cardRef.current?.closest<HTMLElement>(".app-shell");
+    if (document.fullscreenElement === appShell) await document.exitFullscreen();
+    else await appShell?.requestFullscreen();
   };
   return (
     <section ref={cardRef} className="timer-card glass-panel" aria-labelledby="timer-heading">
