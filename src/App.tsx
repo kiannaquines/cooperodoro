@@ -23,6 +23,12 @@ import "./styles.css";
 
 interface Toast { id: string; message: string; kind?: "error" | "success" }
 
+const phaseLogos: Record<TimerState["phase"], string> = {
+  focus: "/cooper-focus-chibi.webp",
+  short_break: "/cooper-short-break-chibi.webp",
+  long_break: "/cooper-long-break-chibi.webp",
+};
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -38,6 +44,7 @@ export default function App() {
   const workspace = useWorkspace(userId, cloudEnabled);
   const activeThemeKey = session || testAuthenticated ? workspace.data.settings.themeKey : browserThemeKey;
   const themeStyle = useMemo(() => themeCssVariables(activeThemeKey) as CSSProperties, [activeThemeKey]);
+  const activeCooperLogo = workspace.data.timer.status === "running" ? phaseLogos[workspace.data.timer.phase] : "/cooper-idle-chibi.webp";
   const { finishTimer, setTimerLocal: persistTimerLocal } = workspace;
   const timerRef = useRef(workspace.data.timer);
   const setTimerLocal = useCallback((timer: TimerState) => {
@@ -93,6 +100,19 @@ export default function App() {
   useEffect(() => {
     document.title = session || testAuthenticated ? `${formatClock(workspace.data.timer.remainingSeconds)} · Cooperodoro` : "Cooperodoro";
   }, [session, testAuthenticated, workspace.data.timer.remainingSeconds]);
+
+  useEffect(() => {
+    let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.rel = "icon";
+      document.head.appendChild(favicon);
+    }
+    const appActive = Boolean(session || testAuthenticated);
+    const href = appActive && workspace.data.timer.status !== "idle" ? activeCooperLogo : "/app-icon.svg";
+    favicon.setAttribute("href", href);
+    favicon.setAttribute("type", href.endsWith(".webp") ? "image/webp" : "image/svg+xml");
+  }, [activeCooperLogo, session, testAuthenticated, workspace.data.timer.status]);
 
   useEffect(() => { timerRef.current = workspace.data.timer; }, [workspace.data.timer]);
   const preset = useMemo(() => workspace.data.presets.find((item) => item.id === workspace.data.timer.presetId) ?? workspace.data.presets[0] ?? DEFAULT_PRESET, [workspace.data.presets, workspace.data.timer.presetId]);
@@ -274,7 +294,7 @@ export default function App() {
         </svg>
       </div>
       <header className="topbar">
-        <div className="brand"><div className="brand-mark"><img src="/cooper-idle-chibi.webp" alt="" /></div><div><strong>Cooperodoro</strong><span>Focus with Cooper</span></div></div>
+        <div className="brand"><div className="brand-mark"><img src={activeCooperLogo} alt="" /></div><div><strong>Cooperodoro</strong><span>Focus with Cooper</span></div></div>
         <div className="top-actions">
           {session && <div className="user-profile" aria-label={`Signed in as ${profileName}`}>
             <div className="user-avatar">

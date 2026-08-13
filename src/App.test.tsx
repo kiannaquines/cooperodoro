@@ -37,6 +37,7 @@ describe("cached theme before authentication", () => {
       authMocks.authStateCallback = callback;
       return { data: { subscription: { unsubscribe: vi.fn() } } };
     });
+    document.querySelector<HTMLLinkElement>('link[rel="icon"]')?.setAttribute("href", "/app-icon.svg");
   });
 
   it("applies the cached theme to the login screen", async () => {
@@ -89,6 +90,25 @@ describe("cached theme before authentication", () => {
     expect(screen.getByText("No tasks yet")).toBeVisible();
     expect(screen.getByText("No playlists yet")).toBeVisible();
     expect(screen.getByRole("button", { name: /connect spotify/i }).querySelector(".spotify-mark")).toBeInTheDocument();
+  });
+
+  it("updates the tab and navbar logos with the timer state", async () => {
+    authMocks.getSession.mockResolvedValue({ user: { id: "timer-logo-user", user_metadata: {} } });
+    render(<App />);
+
+    const start = await screen.findByRole("button", { name: "Start" }, { timeout: 2000 });
+    const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    const navbarLogo = document.querySelector<HTMLImageElement>(".brand-mark img");
+    expect(favicon).toHaveAttribute("href", "/app-icon.svg");
+    expect(navbarLogo).toHaveAttribute("src", "/cooper-idle-chibi.webp");
+
+    fireEvent.click(start);
+    await waitFor(() => expect(favicon).toHaveAttribute("href", "/cooper-focus-chibi.webp"));
+    expect(navbarLogo).toHaveAttribute("src", "/cooper-focus-chibi.webp");
+
+    fireEvent.click(screen.getByRole("button", { name: "Pause" }));
+    await waitFor(() => expect(favicon).toHaveAttribute("href", "/cooper-idle-chibi.webp"));
+    expect(navbarLogo).toHaveAttribute("src", "/cooper-idle-chibi.webp");
   });
 
   it("keeps a newly selected theme on the login screen after sign-out", async () => {
