@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSpotifyPlayer } from "../hooks/useSpotifyPlayer";
 import { parseSpotifyPlaylist } from "../lib/spotify";
 import { beginSpotifyLogin, disconnectSpotify, isSpotifyConfigured, loadSpotifyToken } from "../lib/spotifyAuth";
-import { recommendSpotifyPlaylists, type SpotifyPlaylistRecommendation } from "../lib/spotifyRecommendations";
+import { loadSpotifyPlaylistDetails, recommendSpotifyPlaylists, type SpotifyPlaylistDetails, type SpotifyPlaylistRecommendation } from "../lib/spotifyRecommendations";
 import type { SpotifyPlaylist } from "../types";
 
 interface Props {
@@ -23,6 +23,7 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
   const [recommendations, setRecommendations] = useState<SpotifyPlaylistRecommendation[]>([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendationsError, setRecommendationsError] = useState("");
+  const [playlistDetails, setPlaylistDetails] = useState<Record<string, SpotifyPlaylistDetails>>({});
   const player = useSpotifyPlayer(connected);
   const active = playlists.find((playlist) => playlist.active) ?? playlists[0];
   const loadRecommendations = useCallback(async () => {
@@ -34,6 +35,17 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
     finally { setRecommendationsLoading(false); }
   }, [active, connected, playlists]);
   useEffect(() => { void loadRecommendations(); }, [loadRecommendations]);
+  useEffect(() => {
+    if (!connected || playlists.length === 0) {
+      setPlaylistDetails({});
+      return;
+    }
+    let cancelled = false;
+    void loadSpotifyPlaylistDetails(playlists).then((details) => {
+      if (!cancelled) setPlaylistDetails(details);
+    });
+    return () => { cancelled = true; };
+  }, [connected, playlists]);
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     const parsed = parseSpotifyPlaylist(url);
@@ -57,6 +69,7 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
     disconnectSpotify();
     setConnected(false);
     setRecommendations([]);
+    setPlaylistDetails({});
   };
   const addRecommendation = async (recommendation: SpotifyPlaylistRecommendation) => {
     try { await onAdd(recommendation.name, recommendation.id, recommendation.url); setRecommendations((current) => current.filter((item) => item.id !== recommendation.id)); }
@@ -97,42 +110,49 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
           {player.error && <p className="field-error" role="alert">{player.error}</p>}
         </div>
       )}
-      <div className="playlist-list">
-        {playlists.length === 0 && <div className="spotify-empty">
-          <Music2 />
-          <strong>No playlists yet</strong>
-          <span>Add a Spotify playlist below to set the mood.</span>
-        </div>}
-        {playlists.map((playlist) => (
-          <div className={`playlist-row ${playlist.id === active?.id ? "active" : ""}`} key={playlist.id}>
-            <button className="playlist-name" onClick={() => { void onActivate(playlist.id); if (connected && player.ready) void player.playPlaylist(playlist.playlistId).catch((playError) => setError(playError.message)); }}>{playlist.name}</button>
-            <div className="row-actions">
-              <button onClick={() => void move(playlist, -1)} aria-label={`Move ${playlist.name} up`}><ArrowUp /></button>
-              <button onClick={() => void move(playlist, 1)} aria-label={`Move ${playlist.name} down`}><ArrowDown /></button>
-              <button onClick={() => { const next = prompt("Playlist name", playlist.name); if (next?.trim()) void onUpdate(playlist.id, { name: next.trim() }); }} aria-label={`Rename ${playlist.name}`}><Pencil /></button>
-              <button onClick={() => void onDelete(playlist.id)} aria-label={`Delete ${playlist.name}`}><Trash2 /></button>
-            </div>
-          </div>
-        ))}
-        {connected && active && <div className="spotify-recommendations">
-          <div className="recommendation-heading"><div><Sparkles /><span>Recommended for you</span></div><button onClick={() => void loadRecommendations()} disabled={recommendationsLoading} aria-label="Refresh playlist recommendations"><RefreshCw /></button></div>
-          <small>Inspired by {active.name}</small>
-          {recommendationsLoading ? <div className="recommendation-loading">Finding a matching vibe…</div> : recommendations.length > 0 ? recommendations.map((recommendation) => (
-            <div className="recommendation-row" key={recommendation.id}>
-              {recommendation.imageUrl ? <img src={recommendation.imageUrl} alt="" /> : <div className="recommendation-art"><Music2 /></div>}
-              <div><strong>{recommendation.name}</strong><span>By {recommendation.ownerName}</span></div>
-              <a href={recommendation.url} target="_blank" rel="noreferrer" aria-label={`Open ${recommendation.name} on Spotify`}><ExternalLink /></a>
-              <button onClick={() => void addRecommendation(recommendation)} aria-label={`Add recommended playlist ${recommendation.name}`}><Plus /></button>
-            </div>
-          )) : !recommendationsError && <div className="recommendation-loading">No new matches yet. Try refreshing.</div>}
-          {recommendationsError && <p className="field-error" role="alert">{recommendationsError}</p>}
-        </div>}
+      <div className="spotify-library">
+        <div className="playlist-list">
+          {playlists.length === 0 && <div className="spotify-empty">
+            <Music2 />
+            <strong>No playlists yet</strong>
+            <span>Add a Spotify playlist below to set the mood.</span>
+          </div>}
+          {playlists.map((playlist) => {
+            const details = playlistDetails[playlist.playlistId];
+            const description = details ? `${details.name === playlist.name ? "" : `${details.name} · `}By ${details.ownerName}` : "Saved playlist";
+            return (
+              <div className={`playlist-row saved-playlist-row ${playlist.id === active?.id ? "active" : ""}`} key={playlist.id}>
+                {details?.imageUrl ? <img className="saved-playlist-art" src={details.imageUrl} alt="" /> : <div className="saved-playlist-art"><Music2 /></div>}
+                <button className="playlist-name" onClick={() => { void onActivate(playlist.id); if (connected && player.ready) void player.playPlaylist(playlist.playlistId).catch((playError) => setError(playError.message)); }}><strong>{playlist.name}</strong><span>{description}</span></button>
+                <div className="row-actions">
+                  <button onClick={() => void move(playlist, -1)} aria-label={`Move ${playlist.name} up`}><ArrowUp /></button>
+                  <button onClick={() => void move(playlist, 1)} aria-label={`Move ${playlist.name} down`}><ArrowDown /></button>
+                  <button onClick={() => { const next = prompt("Playlist name", playlist.name); if (next?.trim()) void onUpdate(playlist.id, { name: next.trim() }); }} aria-label={`Rename ${playlist.name}`}><Pencil /></button>
+                  <button onClick={() => void onDelete(playlist.id)} aria-label={`Delete ${playlist.name}`}><Trash2 /></button>
+                </div>
+              </div>
+            );
+          })}
+          {connected && active && <div className="spotify-recommendations">
+            <div className="recommendation-heading"><div><Sparkles /><span>Recommended for you</span></div><button onClick={() => void loadRecommendations()} disabled={recommendationsLoading} aria-label="Refresh playlist recommendations"><RefreshCw /></button></div>
+            <small>Inspired by {active.name}</small>
+            {recommendationsLoading ? <div className="recommendation-loading">Finding a matching vibe…</div> : recommendations.length > 0 ? recommendations.map((recommendation) => (
+              <div className="recommendation-row" key={recommendation.id}>
+                {recommendation.imageUrl ? <img src={recommendation.imageUrl} alt="" /> : <div className="recommendation-art"><Music2 /></div>}
+                <div><strong>{recommendation.name}</strong><span>By {recommendation.ownerName}</span></div>
+                <a href={recommendation.url} target="_blank" rel="noreferrer" aria-label={`Open ${recommendation.name} on Spotify`}><ExternalLink /></a>
+                <button onClick={() => void addRecommendation(recommendation)} aria-label={`Add recommended playlist ${recommendation.name}`}><Plus /></button>
+              </div>
+            )) : !recommendationsError && <div className="recommendation-loading">No new matches yet. Try refreshing.</div>}
+            {recommendationsError && <p className="field-error" role="alert">{recommendationsError}</p>}
+          </div>}
+        </div>
+        <form className="stacked-form" onSubmit={submit}>
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Playlist name" maxLength={100} />
+          <div className="inline-form"><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://open.spotify.com/playlist/..." /><button className="small-primary" aria-label="Add Spotify playlist"><Plus /></button></div>
+          {error && <p className="field-error" role="alert">{error}</p>}
+        </form>
       </div>
-      <form className="stacked-form" onSubmit={submit}>
-        <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Playlist name" maxLength={100} />
-        <div className="inline-form"><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://open.spotify.com/playlist/..." /><button className="small-primary" aria-label="Add Spotify playlist"><Plus /></button></div>
-        {error && <p className="field-error" role="alert">{error}</p>}
-      </form>
     </section>
   );
 }
