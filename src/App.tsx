@@ -1,4 +1,4 @@
-import { LogOut, Settings, TimerReset } from "lucide-react";
+import { LogOut, Settings, TimerReset, UserRound } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { AuthScreen } from "./components/AuthScreen";
@@ -82,6 +82,14 @@ export default function App() {
   const profileOnboardingOpen = Boolean(session && !workspace.loading && !workspace.data.settings.genderIdentity);
   const surveyEligible = Boolean(session && !workspace.loading && shouldPromptForFeedback(workspace.data.feedback, focusSessionCount));
   const surveyCanShow = canShowFeedbackSurvey({ authenticated: Boolean(session), eligible: surveyEligible, profileOnboardingOpen, settingsOpen, timerStatus: workspace.data.timer.status });
+  const profileName = session
+    ? ([session.user.user_metadata?.full_name, session.user.user_metadata?.name, session.user.email]
+      .find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim() ?? "Profile")
+    : "";
+  const profileAvatar = session
+    ? [session.user.user_metadata?.avatar_url, session.user.user_metadata?.picture]
+      .find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim()
+    : undefined;
 
   useEffect(() => {
     if (surveyCanShow) setFeedbackOpen(true);
@@ -237,6 +245,15 @@ export default function App() {
       <header className="topbar">
         <div className="brand"><div className="brand-mark"><img src="/cooper-idle-chibi.webp" alt="" /></div><div><strong>Cooperodoro</strong><span>Focus with Cooper</span></div></div>
         <div className="top-actions">
+          {session && <div className="user-profile" aria-label={`Signed in as ${profileName}`}>
+            <div className="user-avatar">
+              {profileAvatar ? <img src={profileAvatar} alt="" referrerPolicy="no-referrer" /> : <UserRound aria-hidden="true" />}
+            </div>
+            <div className="user-profile-copy">
+              <strong>{profileName}</strong>
+              {session.user.email && session.user.email !== profileName && <span>{session.user.email}</span>}
+            </div>
+          </div>}
           <button className="top-button" aria-label="Settings" onClick={() => setSettingsOpen(true)}><Settings /> <span>Settings</span></button>
           {session && <button className="top-button" aria-label="Sign out" onClick={() => void supabase?.auth.signOut()}><LogOut /><span>Sign out</span></button>}
         </div>

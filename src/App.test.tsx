@@ -57,6 +57,22 @@ describe("cached theme before authentication", () => {
     expect(loadingTheme).toHaveStyle("--theme-page-top: #edf5e6");
   });
 
+  it("shows the signed-in user's profile in the top bar", async () => {
+    authMocks.getSession.mockResolvedValue({
+      user: {
+        id: "profile-user",
+        email: "cooper@example.com",
+        user_metadata: { full_name: "Cooper User", avatar_url: "https://example.com/cooper.png" },
+      },
+    });
+
+    render(<App />);
+
+    expect(await screen.findByLabelText("Signed in as Cooper User")).toBeVisible();
+    expect(screen.getByText("Cooper User")).toBeVisible();
+    expect(screen.getByText("cooper@example.com")).toBeVisible();
+  });
+
   it("keeps a newly selected theme on the login screen after sign-out", async () => {
     localStorage.setItem("pomodoro-studio:theme", "blueberry-cloud");
     authMocks.getSession.mockResolvedValue({ user: { id: "theme-user" } });
