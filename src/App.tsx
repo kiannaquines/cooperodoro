@@ -13,7 +13,7 @@ import { useWorkspace } from "./hooks/useWorkspace";
 import { DEFAULT_PRESET, initialTimer } from "./lib/constants";
 import { enablePushNotifications, playCompletionSound, showLocalNotification } from "./lib/notifications";
 import { completeAuthCallback, getSession, isSupabaseConfigured, signInWithFacebook, signInWithGoogle, supabase } from "./lib/supabase";
-import { themeCssVariables } from "./lib/themes";
+import { loadCachedThemeKey, themeCssVariables } from "./lib/themes";
 import { completeSpotifyLogin } from "./lib/spotifyAuth";
 import { canShowFeedbackSurvey, completedFocusSessionCount, shouldPromptForFeedback } from "./lib/feedback";
 import { moveToNextPhase, phaseDuration, remainingFromEnd, switchTimerPhase } from "./lib/timer";
@@ -31,10 +31,11 @@ export default function App() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [browserThemeKey, setBrowserThemeKey] = useState(() => loadCachedThemeKey());
   const userId = session?.user.id ?? "signed-out";
   const cloudEnabled = Boolean(session && isSupabaseConfigured);
   const workspace = useWorkspace(userId, cloudEnabled);
-  const activeThemeKey = workspace.data.settings.themeKey;
+  const activeThemeKey = session || testAuthenticated ? workspace.data.settings.themeKey : browserThemeKey;
   const themeStyle = useMemo(() => themeCssVariables(activeThemeKey) as CSSProperties, [activeThemeKey]);
   const { finishTimer, setTimerLocal: persistTimerLocal } = workspace;
   const timerRef = useRef(workspace.data.timer);
@@ -66,6 +67,10 @@ export default function App() {
     window.addEventListener("offline", onOffline);
     return () => { window.removeEventListener("online", onOnline); window.removeEventListener("offline", onOffline); };
   }, []);
+
+  useEffect(() => {
+    if (session || testAuthenticated) setBrowserThemeKey(workspace.data.settings.themeKey);
+  }, [session, testAuthenticated, workspace.data.settings.themeKey]);
 
   useEffect(() => { timerRef.current = workspace.data.timer; }, [workspace.data.timer]);
   const preset = useMemo(() => workspace.data.presets.find((item) => item.id === workspace.data.timer.presetId) ?? workspace.data.presets[0] ?? DEFAULT_PRESET, [workspace.data.presets, workspace.data.timer.presetId]);
@@ -191,6 +196,11 @@ export default function App() {
     } catch (error) { toast(error instanceof Error ? error.message : "Could not enable notifications.", "error"); }
   };
 
+  const updateSettings = async (patch: Parameters<typeof workspace.updateSettings>[0]) => {
+    if (patch.themeKey !== undefined) setBrowserThemeKey(patch.themeKey);
+    await workspace.updateSettings(patch);
+  };
+
   const openFeedback = () => {
     if (workspace.data.timer.status === "running") {
       toast("Pause your timer before opening the survey. Your focus session is still running.", "error");
@@ -241,8 +251,8 @@ export default function App() {
         </section>
       </main>
 
-      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} presets={workspace.data.presets} selectedPresetId={workspace.data.timer.presetId} settings={workspace.data.settings} onPresetSelect={selectPreset} onPresetSave={workspace.savePreset} onPresetDelete={workspace.deletePreset} onSettings={workspace.updateSettings} onEnableNotifications={enableNotifications} onOpenFeedback={session ? openFeedback : undefined} />
-      {profileOnboardingOpen && <ProfileOnboarding onSave={workspace.updateSettings} />}
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} presets={workspace.data.presets} selectedPresetId={workspace.data.timer.presetId} settings={workspace.data.settings} onPresetSelect={selectPreset} onPresetSave={workspace.savePreset} onPresetDelete={workspace.deletePreset} onSettings={updateSettings} onEnableNotifications={enableNotifications} onOpenFeedback={session ? openFeedback : undefined} />
+      {profileOnboardingOpen && <ProfileOnboarding onSave={updateSettings} />}
       {feedbackOpen && canShowFeedbackSurvey({ authenticated: Boolean(session), eligible: true, profileOnboardingOpen, settingsOpen, timerStatus: workspace.data.timer.status }) && <FeedbackSurvey feedback={workspace.data.feedback} onSubmit={async (feedback) => { await workspace.saveFeedback(feedback); setFeedbackOpen(false); toast("Thanks for helping Cooperodoro grow."); }} onDismiss={async () => { if (workspace.data.feedback?.status !== "submitted") await workspace.dismissFeedback(focusSessionCount); setFeedbackOpen(false); }} />}
       <div className="toast-region" aria-live="polite">{toasts.map((item) => <div className={`toast ${item.kind ?? "success"}`} key={item.id}>{item.message}</div>)}</div>
     </div>
