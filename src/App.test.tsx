@@ -68,9 +68,26 @@ describe("cached theme before authentication", () => {
 
     render(<App />);
 
+    fireEvent.animationEnd(await screen.findByRole("status"), { animationName: "welcome-screen-fade" });
     expect(await screen.findByLabelText("Signed in as Cooper User")).toBeVisible();
     expect(screen.getByText("Cooper User")).toBeVisible();
     expect(screen.getByText("cooper@example.com")).toBeVisible();
+  });
+
+  it("plays a transition before showing the main screen after login", async () => {
+    render(<App />);
+    await screen.findByRole("main");
+
+    act(() => authMocks.authStateCallback?.("SIGNED_IN", {
+      user: { id: "new-user", email: "new@example.com", user_metadata: {} },
+    }));
+
+    const transition = screen.getByRole("status");
+    expect(transition).toHaveTextContent("Welcome back!");
+    expect(screen.queryByRole("button", { name: /settings/i })).not.toBeInTheDocument();
+
+    fireEvent.animationEnd(transition, { animationName: "welcome-screen-fade" });
+    expect(await screen.findByRole("button", { name: /settings/i })).toBeVisible();
   });
 
   it("keeps a newly selected theme on the login screen after sign-out", async () => {
@@ -78,6 +95,7 @@ describe("cached theme before authentication", () => {
     authMocks.getSession.mockResolvedValue({ user: { id: "theme-user" } });
     render(<App />);
 
+    fireEvent.animationEnd(await screen.findByRole("status"), { animationName: "welcome-screen-fade" });
     fireEvent.click(await screen.findByRole("button", { name: /settings/i }));
     expect(document.title).toBe("25:00 · Cooperodoro");
     fireEvent.click(screen.getByRole("radio", { name: "Matcha Cream" }));

@@ -26,6 +26,7 @@ interface Toast { id: string; message: string; kind?: "error" | "success" }
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const testAuthenticated = import.meta.env.VITE_E2E_AUTH_BYPASS === "true";
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -44,6 +45,7 @@ export default function App() {
     persistTimerLocal(timer);
   }, [persistTimerLocal]);
   const completingRef = useRef(false);
+  const currentSessionRef = useRef<Session | null>(null);
   const toast = useCallback((message: string, kind: Toast["kind"] = "success") => {
     const id = crypto.randomUUID();
     setToasts((current) => [...current, { id, message, kind }]);
@@ -54,11 +56,27 @@ export default function App() {
     let active = true;
     void Promise.all([completeAuthCallback(), completeSpotifyLogin()]).catch((error) => toast(error.message, "error")).finally(async () => {
       const current = await getSession();
-      if (active) { setSession(current); setAuthReady(true); }
+      if (active) {
+        currentSessionRef.current = current;
+        setSession(current);
+        setShowPostLoginAnimation(Boolean(current));
+        setAuthReady(true);
+      }
     });
-    const subscription = supabase?.auth.onAuthStateChange((_event, next) => setSession(next));
+    const subscription = supabase?.auth.onAuthStateChange((_event, next) => {
+      if (!currentSessionRef.current && next) setShowPostLoginAnimation(true);
+      if (!next) setShowPostLoginAnimation(false);
+      currentSessionRef.current = next;
+      setSession(next);
+    });
     return () => { active = false; subscription?.data.subscription.unsubscribe(); };
   }, [toast]);
+
+  useEffect(() => {
+    if (!showPostLoginAnimation) return;
+    const timeout = window.setTimeout(() => setShowPostLoginAnimation(false), 1400);
+    return () => window.clearTimeout(timeout);
+  }, [showPostLoginAnimation]);
 
   useEffect(() => {
     const onOnline = () => setOnline(true);
@@ -233,6 +251,19 @@ export default function App() {
       onGoogle={() => void signInWithGoogle().catch((error) => toast(error.message, "error"))}
       onFacebook={() => void signInWithFacebook().catch((error) => toast(error.message, "error"))}
     />
+  </div>;
+  if (session && showPostLoginAnimation) return <div
+    className="loading-screen post-login-screen cooper-style kawaii-cooper-theme"
+    data-theme={activeThemeKey}
+    style={themeStyle}
+    role="status"
+    aria-live="polite"
+    onAnimationEnd={() => setShowPostLoginAnimation(false)}
+  >
+    <div className="post-login-mascot" aria-hidden="true" onAnimationEnd={(event) => event.stopPropagation()}><img src="/cooper-idle-chibi.webp" alt="" /></div>
+    <strong>Welcome back!</strong>
+    <span>Preparing your focus space…</span>
+    <div className="loading-dots" aria-hidden="true" onAnimationEnd={(event) => event.stopPropagation()}><i /><i /><i /></div>
   </div>;
 
   return (
