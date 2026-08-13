@@ -7,7 +7,7 @@ describe("FeedbackSurvey", () => {
     render(<FeedbackSurvey feedback={null} onSubmit={vi.fn()} onDismiss={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Send feedback" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Choose a rating");
-    fireEvent.click(screen.getByRole("radio", { name: "5" }));
+    fireEvent.click(screen.getByRole("radio", { name: "5: Love it" }));
     fireEvent.click(screen.getByRole("button", { name: "Send feedback" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Choose at least one favorite feature");
   });
@@ -15,10 +15,10 @@ describe("FeedbackSurvey", () => {
   it("submits a complete response", () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     render(<FeedbackSurvey feedback={null} onSubmit={onSubmit} onDismiss={vi.fn()} />);
-    fireEvent.click(screen.getByRole("radio", { name: "5" }));
-    fireEvent.click(screen.getByRole("checkbox", { name: "Cooper mascot" }));
+    fireEvent.click(screen.getByRole("radio", { name: "5: Love it" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Cooper" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Themes" }));
-    fireEvent.change(screen.getByPlaceholderText(/Tell Cooper/), { target: { value: "More Cooper animations" } });
+    fireEvent.change(screen.getByPlaceholderText(/Share one thing/), { target: { value: "More Cooper animations" } });
     fireEvent.click(screen.getByRole("button", { name: "Send feedback" }));
     expect(onSubmit).toHaveBeenCalledWith({ rating: 5, favoriteFeatures: ["cooper-mascot", "themes"], improvementComment: "More Cooper animations" });
   });
@@ -26,7 +26,7 @@ describe("FeedbackSurvey", () => {
   it("loads an existing response for editing and can be dismissed", () => {
     const onDismiss = vi.fn().mockResolvedValue(undefined);
     render(<FeedbackSurvey feedback={{ rating: 4, favoriteFeatures: ["themes", "timer"], improvementComment: "More colors", status: "submitted", nextPromptSessionCount: 6, submittedAt: new Date().toISOString() }} onSubmit={vi.fn()} onDismiss={onDismiss} />);
-    expect(screen.getByRole("radio", { name: "4" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "4: Really useful" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Themes" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Timer" })).toBeChecked();
     expect(screen.getByDisplayValue("More colors")).toHaveAttribute("maxlength", "1000");

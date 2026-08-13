@@ -20,7 +20,7 @@ describe("ProductTour", () => {
     expect(screen.getByRole("dialog")).toHaveTextContent("Shape your session");
 
     for (let step = 0; step < 5; step += 1) fireEvent.keyDown(window, { key: "ArrowRight" });
-    expect(screen.getByRole("dialog")).toHaveTextContent("You are ready to focus");
+    expect(screen.getByRole("dialog")).toHaveTextContent("Make the studio yours");
     fireEvent.click(screen.getByRole("button", { name: "Start" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
