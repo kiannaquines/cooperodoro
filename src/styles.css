@@ -366,9 +366,9 @@ input[type="range"] { accent-color: var(--amber); padding: 0; }
 .cooper-style .stats-card h2, .cooper-style .spotify-card h2 { font-family: "Fredoka", sans-serif; color: var(--theme-ink); }
 .cooper-style .stats-card .eyebrow, .cooper-style .stats-card .section-heading > svg, .cooper-style .spotify-card .eyebrow, .cooper-style .spotify-card .section-heading > svg { color: var(--theme-secondary-deep); }
 .cooper-style .spotify-card .section-heading { grid-column: 1 / -1; }
-.cooper-style .spotify-card .spotify-connect, .cooper-style .spotify-card .spotify-player { grid-column: 1; grid-row: 2; align-self: start; }
+.cooper-style .spotify-card .spotify-player-column { min-width: 0; grid-column: 1; grid-row: 2; align-self: start; display: grid; gap: 14px; }
 .cooper-style .spotify-card .spotify-library { min-width: 0; grid-column: 2; grid-row: 2; align-self: start; display: grid; gap: 14px; }
-.cooper-style .spotify-card .playlist-list, .cooper-style .spotify-card .stacked-form { margin-top: 0; }
+.cooper-style .spotify-card .playlist-list, .cooper-style .spotify-card .stacked-form, .cooper-style .spotify-card .spotify-recommendations { margin-top: 0; }
 .cooper-style .stats-grid div, .cooper-style .task-row, .cooper-style .playlist-row { color: var(--theme-ink); background: color-mix(in srgb, var(--theme-surface-strong) 75%, transparent); border: 2px solid var(--theme-surface-strong); }
 .cooper-style .stats-grid svg { color: var(--theme-secondary-deep); }
 .cooper-style .stats-grid span, .cooper-style .empty-state { color: var(--theme-muted); }
@@ -483,7 +483,7 @@ input[type="range"] { accent-color: var(--amber); padding: 0; }
   .cooper-style .below-timer-grid { grid-template-columns: 1fr; width: min(620px, 100%); gap: 20px; margin-top: 14px; }
   .below-timer-grid .spotify-card { grid-column: auto; }
   .cooper-style .spotify-card { grid-template-columns: 1fr; grid-template-rows: auto; row-gap: 0; }
-  .cooper-style .spotify-card .section-heading, .cooper-style .spotify-card .spotify-connect, .cooper-style .spotify-card .spotify-player, .cooper-style .spotify-card .spotify-library { grid-column: auto; grid-row: auto; }
+  .cooper-style .spotify-card .section-heading, .cooper-style .spotify-card .spotify-player-column, .cooper-style .spotify-card .spotify-library { grid-column: auto; grid-row: auto; }
   .cooper-style .spotify-card .spotify-library { margin-top: 12px; }
   .settings-drawer { padding: 22px 17px; }
   .auth-card { padding: 34px 24px 30px; }

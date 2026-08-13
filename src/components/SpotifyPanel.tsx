@@ -78,39 +78,39 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
   return (
     <section className="side-card spotify-card" aria-labelledby="spotify-title" data-tour="spotify">
       <div className="section-heading"><div><span className="eyebrow">Soundtrack</span><h2 id="spotify-title">Spotify ambience</h2></div><Music2 /></div>
-      {!connected ? (
-        <div className="spotify-connect">
-          <Music2 />
-          <strong>Full Spotify playback</strong>
-          <span>Connect a Premium account to play complete songs here.</span>
-          <button className="spotify-login" disabled={!isSpotifyConfigured} onClick={() => void beginSpotifyLogin().catch((loginError) => setError(loginError.message))}>
-            <svg className="spotify-mark" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="11" fill="currentColor" />
-              <path d="M6.2 8.7c4.1-1.2 8.2-.9 11.7 1" fill="none" stroke="#1ed760" strokeWidth="1.8" strokeLinecap="round" />
-              <path d="M6.9 12c3.5-.9 7-.6 10 1" fill="none" stroke="#1ed760" strokeWidth="1.6" strokeLinecap="round" />
-              <path d="M7.6 15.1c2.8-.6 5.7-.3 8.2.8" fill="none" stroke="#1ed760" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            Connect Spotify
-          </button>
-          {!isSpotifyConfigured && <small>Add your Spotify client ID to enable login.</small>}
-        </div>
-      ) : (
-        <div className="spotify-player">
-          <div className="now-playing">
-            {player.track?.album.images[0]?.url ? <img src={player.track.album.images[0].url} alt="" /> : <div className="track-placeholder"><Music2 /></div>}
-            <div><span>{player.track ? "Now playing" : player.ready ? "Ready to play" : "Connecting…"}</span><strong>{player.track?.name ?? active?.name ?? "Choose a playlist"}</strong><small>{player.track?.artists.map((artist) => artist.name).join(", ") || "Cooperodoro"}</small></div>
+      <div className="spotify-player-column">
+        {!connected ? (
+          <div className="spotify-connect">
+            <Music2 />
+            <strong>Full Spotify playback</strong>
+            <span>Connect a Premium account to play complete songs here.</span>
+            <button className="spotify-login" disabled={!isSpotifyConfigured} onClick={() => void beginSpotifyLogin().catch((loginError) => setError(loginError.message))}>
+              <svg className="spotify-mark" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="currentColor" />
+                <path d="M6.2 8.7c4.1-1.2 8.2-.9 11.7 1" fill="none" stroke="#1ed760" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M6.9 12c3.5-.9 7-.6 10 1" fill="none" stroke="#1ed760" strokeWidth="1.6" strokeLinecap="round" />
+                <path d="M7.6 15.1c2.8-.6 5.7-.3 8.2.8" fill="none" stroke="#1ed760" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              Connect Spotify
+            </button>
+            {!isSpotifyConfigured && <small>Add your Spotify client ID to enable login.</small>}
           </div>
-          <div className="player-controls">
-            <button onClick={() => void player.previousTrack()} aria-label="Previous track"><SkipBack /></button>
-            <button className="play-control" disabled={!player.ready || !active} onClick={() => player.track ? void player.togglePlay() : void playActive()} aria-label={player.paused ? "Play" : "Pause"}>{player.paused ? <Play /> : <Pause />}</button>
-            <button onClick={() => void player.nextTrack()} aria-label="Next track"><SkipForward /></button>
+        ) : (
+          <div className="spotify-player">
+            <div className="now-playing">
+              {player.track?.album.images[0]?.url ? <img src={player.track.album.images[0].url} alt="" /> : <div className="track-placeholder"><Music2 /></div>}
+              <div><span>{player.track ? "Now playing" : player.ready ? "Ready to play" : "Connecting…"}</span><strong>{player.track?.name ?? active?.name ?? "Choose a playlist"}</strong><small>{player.track?.artists.map((artist) => artist.name).join(", ") || "Cooperodoro"}</small></div>
+            </div>
+            <div className="player-controls">
+              <button onClick={() => void player.previousTrack()} aria-label="Previous track"><SkipBack /></button>
+              <button className="play-control" disabled={!player.ready || !active} onClick={() => player.track ? void player.togglePlay() : void playActive()} aria-label={player.paused ? "Play" : "Pause"}>{player.paused ? <Play /> : <Pause />}</button>
+              <button onClick={() => void player.nextTrack()} aria-label="Next track"><SkipForward /></button>
+            </div>
+            <label className="volume-control"><span>Volume</span><input type="range" min="0" max="100" value={volume} onChange={(event) => { const next = Number(event.target.value); setVolume(next); void player.setVolume(next / 100); }} /></label>
+            <div className="spotify-player-links"><a href={active?.url ?? "https://open.spotify.com"} target="_blank" rel="noreferrer"><ExternalLink /> Open Spotify</a><button onClick={disconnect}><Unplug /> Disconnect</button></div>
+            {player.error && <p className="field-error" role="alert">{player.error}</p>}
           </div>
-          <label className="volume-control"><span>Volume</span><input type="range" min="0" max="100" value={volume} onChange={(event) => { const next = Number(event.target.value); setVolume(next); void player.setVolume(next / 100); }} /></label>
-          <div className="spotify-player-links"><a href={active?.url ?? "https://open.spotify.com"} target="_blank" rel="noreferrer"><ExternalLink /> Open Spotify</a><button onClick={disconnect}><Unplug /> Disconnect</button></div>
-          {player.error && <p className="field-error" role="alert">{player.error}</p>}
-        </div>
-      )}
-      <div className="spotify-library">
+        )}
         <div className="playlist-list">
           {playlists.length === 0 && <div className="spotify-empty">
             <Music2 />
@@ -133,7 +133,10 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
               </div>
             );
           })}
-          {connected && active && <div className="spotify-recommendations">
+        </div>
+      </div>
+      <div className="spotify-library">
+        {connected && active && <div className="spotify-recommendations">
             <div className="recommendation-heading"><div><Sparkles /><span>Recommended for you</span></div><button onClick={() => void loadRecommendations()} disabled={recommendationsLoading} aria-label="Refresh playlist recommendations"><RefreshCw /></button></div>
             <small>Inspired by {active.name}</small>
             {recommendationsLoading ? <div className="recommendation-loading">Finding a matching vibe…</div> : recommendations.length > 0 ? recommendations.map((recommendation) => (
@@ -145,8 +148,7 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
               </div>
             )) : !recommendationsError && <div className="recommendation-loading">No new matches yet. Try refreshing.</div>}
             {recommendationsError && <p className="field-error" role="alert">{recommendationsError}</p>}
-          </div>}
-        </div>
+        </div>}
         <form className="stacked-form" onSubmit={submit}>
           <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Playlist name" maxLength={100} />
           <div className="inline-form"><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://open.spotify.com/playlist/..." /><button className="small-primary" aria-label="Add Spotify playlist"><Plus /></button></div>

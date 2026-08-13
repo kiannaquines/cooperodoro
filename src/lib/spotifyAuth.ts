@@ -5,6 +5,7 @@ const RETURN_KEY = "pomodoro-studio:spotify-return";
 
 const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID?.trim();
 const configuredRedirectUri = import.meta.env.VITE_SPOTIFY_REDIRECT_URI?.trim();
+let loginCompletion: Promise<boolean> | null = null;
 
 export const isSpotifyConfigured = Boolean(clientId && !clientId.includes("your_spotify"));
 export const spotifyRedirectUri = (): string => configuredRedirectUri || `${window.location.origin}/spotify/callback`;
@@ -60,7 +61,7 @@ export const beginSpotifyLogin = async (): Promise<void> => {
   const state = randomString(32);
   sessionStorage.setItem(VERIFIER_KEY, verifier);
   sessionStorage.setItem(STATE_KEY, state);
-  sessionStorage.setItem(RETURN_KEY, window.location.pathname);
+  sessionStorage.setItem(RETURN_KEY, window.location.pathname === "/spotify/callback" ? "/" : window.location.pathname);
   const authorize = new URL("https://accounts.spotify.com/authorize");
   authorize.search = new URLSearchParams({
     client_id: clientId,
@@ -84,14 +85,30 @@ const requestToken = async (body: URLSearchParams): Promise<SpotifyTokenResponse
   return response.json() as Promise<SpotifyTokenResponse>;
 };
 
-export const completeSpotifyLogin = async (): Promise<boolean> => {
-  if (window.location.pathname !== "/spotify/callback") return false;
+const spotifyReturnPath = (): string => {
+  const returnPath = sessionStorage.getItem(RETURN_KEY);
+  return returnPath && returnPath !== "/spotify/callback" ? returnPath : "/";
+};
+
+const clearSpotifyLoginState = (): void => {
+  sessionStorage.removeItem(VERIFIER_KEY);
+  sessionStorage.removeItem(STATE_KEY);
+  sessionStorage.removeItem(RETURN_KEY);
+};
+
+const completeSpotifyLoginOnce = async (): Promise<boolean> => {
   const params = new URLSearchParams(window.location.search);
   const error = params.get("error");
   if (error) throw new Error(error === "access_denied" ? "Spotify access was declined." : "Spotify sign-in failed.");
   const code = params.get("code");
   const verifier = sessionStorage.getItem(VERIFIER_KEY);
   const expectedState = sessionStorage.getItem(STATE_KEY);
+  if (!code && loadSpotifyToken()) {
+    const returnPath = spotifyReturnPath();
+    clearSpotifyLoginState();
+    window.history.replaceState({}, "", returnPath);
+    return true;
+  }
   if (!code || !verifier || !expectedState || params.get("state") !== expectedState) throw new Error("Spotify sign-in could not be verified. Please try again.");
   if (!clientId) throw new Error("Spotify is not configured.");
   const response = await requestToken(new URLSearchParams({
@@ -102,12 +119,21 @@ export const completeSpotifyLogin = async (): Promise<boolean> => {
     code_verifier: verifier,
   }));
   saveToken(response);
-  const returnPath = sessionStorage.getItem(RETURN_KEY) || "/";
-  sessionStorage.removeItem(VERIFIER_KEY);
-  sessionStorage.removeItem(STATE_KEY);
-  sessionStorage.removeItem(RETURN_KEY);
+  const returnPath = spotifyReturnPath();
+  clearSpotifyLoginState();
   window.history.replaceState({}, "", returnPath);
   return true;
+};
+
+export const completeSpotifyLogin = async (): Promise<boolean> => {
+  if (window.location.pathname !== "/spotify/callback") return false;
+  if (!loginCompletion) loginCompletion = completeSpotifyLoginOnce();
+  const currentCompletion = loginCompletion;
+  try {
+    return await currentCompletion;
+  } finally {
+    if (loginCompletion === currentCompletion) loginCompletion = null;
+  }
 };
 
 export const getSpotifyAccessToken = async (): Promise<string | null> => {
