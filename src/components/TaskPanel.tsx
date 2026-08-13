@@ -22,7 +22,7 @@ export function TaskPanel({ tasks, activeTaskId, onSelect, onAdd, onUpdate, onDe
     setTitle("");
   };
   return (
-    <section className="side-card" aria-labelledby="tasks-title">
+    <section className="side-card task-card" aria-labelledby="tasks-title">
       <div className="section-heading"><div><span className="eyebrow">Today</span><h2 id="tasks-title">Your tasks</h2></div><span className="count-badge">{tasks.filter((task) => !task.completed).length}</span></div>
       <form className="inline-form" onSubmit={submit}>
         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Add something worth finishing" maxLength={240} aria-label="New task title" />

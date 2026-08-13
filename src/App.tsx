@@ -242,12 +242,10 @@ export default function App() {
         <div className="center-column">
           <TimerCard timer={workspace.data.timer} tasks={workspace.data.tasks} rounds={preset.roundsBeforeLongBreak} onTaskChange={(taskId) => setTimerLocal({ ...workspace.data.timer, taskId })} onStart={() => void start()} onPause={() => void pause()} onReset={() => void reset()} onSkip={() => void advance(true)} onAcknowledge={() => void advance(false)} onPhaseChange={selectPhase} autoStart={workspace.data.settings.autoStart} onAutoStartChange={(autoStart) => void workspace.updateSettings({ autoStart })} onCustomTimer={() => setSettingsOpen(true)} />
         </div>
-        <section className="below-timer-grid">
+        <section className="below-timer-grid support-dashboard">
           <TaskPanel tasks={workspace.data.tasks} activeTaskId={workspace.data.timer.taskId} onSelect={(taskId) => setTimerLocal({ ...workspace.data.timer, taskId })} onAdd={workspace.addTask} onUpdate={workspace.updateTask} onDelete={workspace.deleteTask} />
-          <div className="secondary-grid">
           <StatsPanel sessions={workspace.data.sessions} tasks={workspace.data.tasks} />
           <SpotifyPanel playlists={workspace.data.playlists} onAdd={workspace.addPlaylist} onActivate={workspace.setActivePlaylist} onUpdate={workspace.updatePlaylist} onDelete={workspace.deletePlaylist} />
-          </div>
         </section>
       </main>
 
