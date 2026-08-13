@@ -1,4 +1,4 @@
-import { LogOut, Settings, TimerReset, UserRound } from "lucide-react";
+import { LogOut, TimerReset, UserRound } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { AuthScreen } from "./components/AuthScreen";
@@ -36,6 +36,7 @@ export default function App() {
   const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const testAuthenticated = import.meta.env.VITE_E2E_AUTH_BYPASS === "true";
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
@@ -93,6 +94,13 @@ export default function App() {
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
     return () => { window.removeEventListener("online", onOnline); window.removeEventListener("offline", onOffline); };
+  }, []);
+
+  useEffect(() => {
+    const updateNav = () => setNavScrolled(window.scrollY > 16);
+    updateNav();
+    window.addEventListener("scroll", updateNav, { passive: true });
+    return () => window.removeEventListener("scroll", updateNav);
   }, []);
 
   useEffect(() => {
@@ -318,23 +326,22 @@ export default function App() {
         </svg>
       </div>
       <div className="theme-wave theme-wave-lower" aria-hidden="true">
-        <svg viewBox="0 0 2880 170" preserveAspectRatio="none">
-          <path d="M0 112 C130 36 300 24 450 98 C630 184 790 136 930 54 C1080 -34 1260 28 1420 116 C1590 208 1780 138 1920 48 C2070 -46 2250 30 2410 112 C2580 196 2740 110 2880 72 L2880 170 L0 170 Z" />
+        <svg viewBox="0 0 2880 120" preserveAspectRatio="none">
+          <path d="M0 62 C120 8 240 116 360 62 S600 8 720 62 S960 116 1080 62 S1320 8 1440 62 S1680 116 1800 62 S2040 8 2160 62 S2400 116 2520 62 S2760 8 2880 62 L2880 120 L0 120 Z" />
         </svg>
       </div>
-      <header className="topbar">
+      <header className={`topbar ${navScrolled ? "is-scrolled" : ""}`}>
         <div className="brand"><div className="brand-mark"><img src={activeCooperLogo} alt="" /></div><div><strong>Cooperodoro</strong><span>Focus with Cooper</span></div></div>
         <div className="top-actions">
-          {session && <div className="user-profile" aria-label={`Signed in as ${profileName}`} data-tour="profile">
+          {(session || testAuthenticated) && <button type="button" className="user-profile" aria-label={`Open profile and settings${profileName ? ` for ${profileName}` : ""}`} data-tour="profile" onClick={() => setSettingsOpen(true)}>
             <div className="user-avatar">
               {profileAvatar ? <img src={profileAvatar} alt="" referrerPolicy="no-referrer" /> : <UserRound aria-hidden="true" />}
             </div>
             <div className="user-profile-copy">
-              <strong>{profileName}</strong>
-              {session.user.email && session.user.email !== profileName && <span>{session.user.email}</span>}
+              <strong>{profileName || "Profile"}</strong>
+              {session?.user.email && session.user.email !== profileName && <span>{session.user.email}</span>}
             </div>
-          </div>}
-          <button className="top-button" aria-label="Settings" data-tour="settings" onClick={() => setSettingsOpen(true)}><Settings /> <span>Settings</span></button>
+          </button>}
           {session && <button className="top-button" aria-label="Sign out" onClick={() => void supabase?.auth.signOut()}><LogOut /><span>Sign out</span></button>}
         </div>
       </header>

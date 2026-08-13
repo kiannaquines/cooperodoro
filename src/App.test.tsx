@@ -37,6 +37,7 @@ describe("cached theme before authentication", () => {
       authMocks.authStateCallback = callback;
       return { data: { subscription: { unsubscribe: vi.fn() } } };
     });
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 0 });
     document.querySelector<HTMLLinkElement>('link[rel="icon"]')?.setAttribute("href", "/app-icon.svg");
   });
 
@@ -69,9 +70,12 @@ describe("cached theme before authentication", () => {
 
     render(<App />);
 
-    expect(await screen.findByLabelText("Signed in as Cooper User", {}, { timeout: 2000 })).toBeVisible();
+    const profile = await screen.findByRole("button", { name: "Open profile and settings for Cooper User" }, { timeout: 2000 });
+    expect(profile).toBeVisible();
     expect(screen.getByText("Cooper User")).toBeVisible();
     expect(screen.getByText("cooper@example.com")).toBeVisible();
+    fireEvent.click(profile);
+    expect(screen.getByRole("complementary", { name: "Studio settings" })).toBeVisible();
   });
 
   it("plays a transition before showing the main screen after login", async () => {
@@ -84,9 +88,10 @@ describe("cached theme before authentication", () => {
 
     const transition = screen.getByRole("status");
     expect(transition).toHaveTextContent("Welcome back!");
-    expect(screen.queryByRole("button", { name: /settings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /profile and settings/i })).not.toBeInTheDocument();
 
-    expect(await screen.findByRole("button", { name: /settings/i }, { timeout: 2000 })).toBeVisible();
+    expect(await screen.findByRole("button", { name: /profile and settings/i }, { timeout: 2000 })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Settings" })).not.toBeInTheDocument();
     expect(screen.getByText("No tasks yet")).toBeVisible();
     expect(screen.getByText("No playlists yet")).toBeVisible();
     expect(screen.getByRole("button", { name: /connect spotify/i }).querySelector(".spotify-mark")).toBeInTheDocument();
@@ -122,7 +127,7 @@ describe("cached theme before authentication", () => {
 
     firstVisit.unmount();
     render(<App />);
-    const settings = await screen.findByRole("button", { name: "Settings" }, { timeout: 2000 });
+    const settings = await screen.findByRole("button", { name: /profile and settings/i }, { timeout: 2000 });
     expect(screen.queryByRole("dialog", { name: "Meet your focus studio" })).not.toBeInTheDocument();
 
     fireEvent.click(settings);
@@ -135,7 +140,7 @@ describe("cached theme before authentication", () => {
     authMocks.getSession.mockResolvedValue({ user: { id: "theme-user" } });
     render(<App />);
 
-    fireEvent.click(await screen.findByRole("button", { name: /settings/i }, { timeout: 2000 }));
+    fireEvent.click(await screen.findByRole("button", { name: /profile and settings/i }, { timeout: 2000 }));
     expect(document.title).toBe("25:00 · Cooperodoro");
     fireEvent.click(screen.getByRole("radio", { name: "Matcha Cream" }));
     await waitFor(() => expect(document.querySelector(".app-shell")).toHaveAttribute("data-theme", "matcha-cream"));
@@ -146,5 +151,18 @@ describe("cached theme before authentication", () => {
     const loginTheme = (await screen.findByRole("main")).parentElement;
     expect(loginTheme).toHaveAttribute("data-theme", "matcha-cream");
     expect(document.title).toBe("Cooperodoro");
+  });
+
+  it("makes the sticky navbar transparent after scrolling", async () => {
+    authMocks.getSession.mockResolvedValue({ user: { id: "scroll-user", user_metadata: {} } });
+    render(<App />);
+    await screen.findByRole("button", { name: /profile and settings/i }, { timeout: 2000 });
+    const topbar = document.querySelector(".topbar");
+
+    expect(topbar).not.toHaveClass("is-scrolled");
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 80 });
+    fireEvent.scroll(window);
+
+    await waitFor(() => expect(topbar).toHaveClass("is-scrolled"));
   });
 });

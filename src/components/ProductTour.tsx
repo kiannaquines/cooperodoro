@@ -14,8 +14,7 @@ const TOUR_STEPS: TourStep[] = [
   { target: '[data-tour="tasks"]', eyebrow: "Your tasks", title: "Decide what matters now", description: "Add tasks, select one for the current session, mark it complete, or use the row actions to edit and delete it." },
   { target: '[data-tour="insights"]', eyebrow: "Focus insights", title: "See your progress", description: "Completed sessions, focused minutes, finished tasks, and the activity chart update as you work." },
   { target: '[data-tour="spotify"]', eyebrow: "Spotify ambience", title: "Set the mood", description: "Connect Spotify Premium for playback, then add, activate, reorder, rename, or remove your saved playlists." },
-  { target: '[data-tour="settings"]', eyebrow: "Settings", title: "Make the studio yours", description: "Adjust timer presets, sounds, notifications, automatic phase changes, profile preferences, and color themes." },
-  { target: '[data-tour="profile"]', eyebrow: "Your profile", title: "You are ready to focus", description: "Your avatar shows the signed-in account. Settings and Sign out stay beside it, and this guide can always be replayed from Settings." },
+  { target: '[data-tour="profile"]', eyebrow: "Profile & settings", title: "Make the studio yours", description: "Select your avatar to adjust timer presets, sounds, notifications, profile preferences, and color themes. You can also replay this guide there." },
 ];
 
 interface ProductTourProps {
