@@ -1,4 +1,4 @@
-import { Bell, MessageCircleHeart, Palette, Plus, Settings, Trash2, X } from "lucide-react";
+import { Bell, CircleHelp, MessageCircleHeart, Palette, Plus, Settings, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { validatePreset } from "../lib/timer";
 import { COLOR_THEMES } from "../lib/themes";
@@ -18,6 +18,7 @@ interface Props {
   onSettings: (patch: Partial<UserSettings>) => Promise<void>;
   onEnableNotifications: () => Promise<void>;
   onOpenFeedback?: () => void;
+  onOpenGuide: () => void;
 }
 
 const blankPreset = { name: "", focusMinutes: 50, shortBreakMinutes: 10, longBreakMinutes: 20, roundsBeforeLongBreak: 4 };
@@ -73,6 +74,7 @@ export function SettingsDrawer(props: Props) {
             ))}
           </div>
         </section>
+        <section><h3><CircleHelp /> App guide</h3><p className="settings-help">Need a refresher on how each part of Cooperodoro works?</p><button className="secondary-button" onClick={props.onOpenGuide}><CircleHelp /> Show app guide</button></section>
         {props.onOpenFeedback && <section><h3><MessageCircleHeart /> Feedback</h3><p className="settings-help">Have an idea or want to tell Cooper what is working?</p><button className="secondary-button" onClick={props.onOpenFeedback}><MessageCircleHeart /> Share feedback</button></section>}
         {error && <p className="drawer-error" role="alert">{error}</p>}
       </aside>

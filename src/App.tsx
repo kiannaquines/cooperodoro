@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { AuthScreen } from "./components/AuthScreen";
 import { SettingsDrawer } from "./components/SettingsDrawer";
 import { ProfileOnboarding } from "./components/ProfileOnboarding";
+import { ProductTour } from "./components/ProductTour";
 import { FeedbackSurvey } from "./components/FeedbackSurvey";
 import { SpotifyPanel } from "./components/SpotifyPanel";
 import { StatsPanel } from "./components/StatsPanel";
@@ -28,6 +29,7 @@ const phaseLogos: Record<TimerState["phase"], string> = {
   short_break: "/cooper-short-break-chibi.webp",
   long_break: "/cooper-long-break-chibi.webp",
 };
+const GUIDE_VERSION = "v1";
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -36,6 +38,7 @@ export default function App() {
   const testAuthenticated = import.meta.env.VITE_E2E_AUTH_BYPASS === "true";
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [browserThemeKey, setBrowserThemeKey] = useState(() => loadCachedThemeKey());
@@ -118,6 +121,8 @@ export default function App() {
   const preset = useMemo(() => workspace.data.presets.find((item) => item.id === workspace.data.timer.presetId) ?? workspace.data.presets[0] ?? DEFAULT_PRESET, [workspace.data.presets, workspace.data.timer.presetId]);
   const focusSessionCount = completedFocusSessionCount(workspace.data.sessions);
   const profileOnboardingOpen = Boolean(session && !workspace.loading && !workspace.data.settings.genderIdentity);
+  const guideStorageKey = session ? `cooperodoro:guide:${session.user.id}:${GUIDE_VERSION}` : "";
+  const guideShouldOpen = Boolean(session && !workspace.loading && !profileOnboardingOpen && localStorage.getItem(guideStorageKey) !== "complete");
   const surveyEligible = Boolean(session && !workspace.loading && shouldPromptForFeedback(workspace.data.feedback, focusSessionCount));
   const surveyCanShow = canShowFeedbackSurvey({ authenticated: Boolean(session), eligible: surveyEligible, profileOnboardingOpen, settingsOpen, timerStatus: workspace.data.timer.status });
   const profileName = session
@@ -130,8 +135,16 @@ export default function App() {
     : undefined;
 
   useEffect(() => {
-    if (surveyCanShow) setFeedbackOpen(true);
-  }, [surveyCanShow]);
+    if (!session) setGuideOpen(false);
+    else if (guideShouldOpen && !showPostLoginAnimation) {
+      setFeedbackOpen(false);
+      setGuideOpen(true);
+    }
+  }, [guideShouldOpen, session, showPostLoginAnimation]);
+
+  useEffect(() => {
+    if (surveyCanShow && !guideOpen && !guideShouldOpen) setFeedbackOpen(true);
+  }, [guideOpen, guideShouldOpen, surveyCanShow]);
 
   const handleComplete = useCallback(async (timer: TimerState) => {
     if (completingRef.current || timer.status === "awaiting_acknowledgement") return;
@@ -264,6 +277,17 @@ export default function App() {
     setFeedbackOpen(true);
   };
 
+  const closeGuide = () => {
+    if (guideStorageKey) localStorage.setItem(guideStorageKey, "complete");
+    setGuideOpen(false);
+  };
+
+  const openGuide = () => {
+    setSettingsOpen(false);
+    setFeedbackOpen(false);
+    setGuideOpen(true);
+  };
+
   if (!authReady) return <div className="loading-screen cooper-style kawaii-cooper-theme" data-theme={activeThemeKey} style={themeStyle}><TimerReset className="spin" /><span>Opening your studio…</span></div>;
   if (!session && !testAuthenticated) return <div className="cooper-style kawaii-cooper-theme" data-theme={activeThemeKey} style={themeStyle}>
     <AuthScreen
@@ -296,7 +320,7 @@ export default function App() {
       <header className="topbar">
         <div className="brand"><div className="brand-mark"><img src={activeCooperLogo} alt="" /></div><div><strong>Cooperodoro</strong><span>Focus with Cooper</span></div></div>
         <div className="top-actions">
-          {session && <div className="user-profile" aria-label={`Signed in as ${profileName}`}>
+          {session && <div className="user-profile" aria-label={`Signed in as ${profileName}`} data-tour="profile">
             <div className="user-avatar">
               {profileAvatar ? <img src={profileAvatar} alt="" referrerPolicy="no-referrer" /> : <UserRound aria-hidden="true" />}
             </div>
@@ -305,7 +329,7 @@ export default function App() {
               {session.user.email && session.user.email !== profileName && <span>{session.user.email}</span>}
             </div>
           </div>}
-          <button className="top-button" aria-label="Settings" onClick={() => setSettingsOpen(true)}><Settings /> <span>Settings</span></button>
+          <button className="top-button" aria-label="Settings" data-tour="settings" onClick={() => setSettingsOpen(true)}><Settings /> <span>Settings</span></button>
           {session && <button className="top-button" aria-label="Sign out" onClick={() => void supabase?.auth.signOut()}><LogOut /><span>Sign out</span></button>}
         </div>
       </header>
@@ -321,9 +345,10 @@ export default function App() {
         </section>
       </main>
 
-      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} presets={workspace.data.presets} selectedPresetId={workspace.data.timer.presetId} settings={workspace.data.settings} onPresetSelect={selectPreset} onPresetSave={workspace.savePreset} onPresetDelete={workspace.deletePreset} onSettings={updateSettings} onEnableNotifications={enableNotifications} onOpenFeedback={session ? openFeedback : undefined} />
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} presets={workspace.data.presets} selectedPresetId={workspace.data.timer.presetId} settings={workspace.data.settings} onPresetSelect={selectPreset} onPresetSave={workspace.savePreset} onPresetDelete={workspace.deletePreset} onSettings={updateSettings} onEnableNotifications={enableNotifications} onOpenFeedback={session ? openFeedback : undefined} onOpenGuide={openGuide} />
       {profileOnboardingOpen && <ProfileOnboarding onSave={updateSettings} />}
-      {feedbackOpen && canShowFeedbackSurvey({ authenticated: Boolean(session), eligible: true, profileOnboardingOpen, settingsOpen, timerStatus: workspace.data.timer.status }) && <FeedbackSurvey feedback={workspace.data.feedback} onSubmit={async (feedback) => { await workspace.saveFeedback(feedback); setFeedbackOpen(false); toast("Thanks for helping Cooperodoro grow."); }} onDismiss={async () => { if (workspace.data.feedback?.status !== "submitted") await workspace.dismissFeedback(focusSessionCount); setFeedbackOpen(false); }} />}
+      {feedbackOpen && !guideOpen && canShowFeedbackSurvey({ authenticated: Boolean(session), eligible: true, profileOnboardingOpen, settingsOpen, timerStatus: workspace.data.timer.status }) && <FeedbackSurvey feedback={workspace.data.feedback} onSubmit={async (feedback) => { await workspace.saveFeedback(feedback); setFeedbackOpen(false); toast("Thanks for helping Cooperodoro grow."); }} onDismiss={async () => { if (workspace.data.feedback?.status !== "submitted") await workspace.dismissFeedback(focusSessionCount); setFeedbackOpen(false); }} />}
+      <ProductTour open={guideOpen && !profileOnboardingOpen && !showPostLoginAnimation} onClose={closeGuide} />
       <div className="toast-region" aria-live="polite">{toasts.map((item) => <div className={`toast ${item.kind ?? "success"}`} key={item.id}>{item.message}</div>)}</div>
     </div>
   );

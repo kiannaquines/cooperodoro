@@ -45,7 +45,7 @@ export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete 
     setConnected(false);
   };
   return (
-    <section className="side-card spotify-card" aria-labelledby="spotify-title">
+    <section className="side-card spotify-card" aria-labelledby="spotify-title" data-tour="spotify">
       <div className="section-heading"><div><span className="eyebrow">Soundtrack</span><h2 id="spotify-title">Spotify ambience</h2></div><Music2 /></div>
       {!connected ? (
         <div className="spotify-connect">

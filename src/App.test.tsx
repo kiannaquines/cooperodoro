@@ -111,6 +111,20 @@ describe("cached theme before authentication", () => {
     expect(navbarLogo).toHaveAttribute("src", "/cooper-idle-chibi.webp");
   });
 
+  it("shows the guide once per user and allows replay from settings", async () => {
+    localStorage.setItem("pomodoro-studio:guide-user", JSON.stringify({ settings: { genderIdentity: "prefer-not-to-say" } }));
+    authMocks.getSession.mockResolvedValue({ user: { id: "guide-user", user_metadata: {} } });
+    render(<App />);
+
+    expect(await screen.findByRole("dialog", { name: "Meet your focus studio" }, { timeout: 2000 })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Skip tour" }));
+    expect(localStorage.getItem("cooperodoro:guide:guide-user:v1")).toBe("complete");
+
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    fireEvent.click(screen.getByRole("button", { name: /show app guide/i }));
+    expect(screen.getByRole("dialog", { name: "Meet your focus studio" })).toBeVisible();
+  });
+
   it("keeps a newly selected theme on the login screen after sign-out", async () => {
     localStorage.setItem("pomodoro-studio:theme", "blueberry-cloud");
     authMocks.getSession.mockResolvedValue({ user: { id: "theme-user" } });

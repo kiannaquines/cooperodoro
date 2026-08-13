@@ -26,7 +26,7 @@ export function StatsPanel({ sessions, tasks }: { sessions: FocusSession[]; task
   const todayMinutes = Math.round(todaySessions.reduce((sum, session) => sum + session.durationSeconds / 60, 0));
   const weeklyMinutes = chart.reduce((sum, item) => sum + item.minutes, 0);
   return (
-    <section className="side-card stats-card" aria-labelledby="stats-title">
+    <section className="side-card stats-card" aria-labelledby="stats-title" data-tour="insights">
       <div className="section-heading"><div><span className="eyebrow">Rhythm</span><h2 id="stats-title">Focus insights</h2></div><BarChart3 /></div>
       <div className="stats-grid">
         <div><Clock3 /><strong>{todayMinutes}</strong><span>minutes today</span></div>

@@ -67,7 +67,7 @@ export function TimerCard({ timer, tasks, rounds, onTaskChange, onStart, onPause
     else await appShell?.requestFullscreen();
   };
   return (
-    <section ref={cardRef} className="timer-card glass-panel" aria-labelledby="timer-heading">
+    <section ref={cardRef} className="timer-card glass-panel" aria-labelledby="timer-heading" data-tour="timer">
       <div className="timer-toolbar">
         <button className="custom-timer-button" onClick={onCustomTimer}>Custom timer</button>
         <button className="fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? "Exit full screen" : "Enter full screen"}>{fullscreen ? <Minimize2 /> : <Maximize2 />}<span>{fullscreen ? "Exit full screen" : "Full screen"}</span></button>
