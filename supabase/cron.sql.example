@@ -1,0 +1,25 @@
+-- Run after deploying the Edge Function and adding these Supabase Vault secrets:
+-- project_url: https://<project-ref>.supabase.co
+-- service_role_key: the project's service-role key
+--
+-- The Authorization header is required because verify_jwt is enabled.
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+select cron.schedule(
+  'dispatch-timer-notifications-every-minute',
+  '* * * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url')
+      || '/functions/v1/dispatch-timer-notifications',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (
+        select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'
+      )
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);

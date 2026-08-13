@@ -1,0 +1,94 @@
+import { ArrowDown, ArrowUp, ExternalLink, LogIn, Music2, Pause, Pencil, Play, Plus, SkipBack, SkipForward, Trash2, Unplug } from "lucide-react";
+import { useState } from "react";
+import { useSpotifyPlayer } from "../hooks/useSpotifyPlayer";
+import { parseSpotifyPlaylist } from "../lib/spotify";
+import { beginSpotifyLogin, disconnectSpotify, isSpotifyConfigured, loadSpotifyToken } from "../lib/spotifyAuth";
+import type { SpotifyPlaylist } from "../types";
+
+interface Props {
+  playlists: SpotifyPlaylist[];
+  onAdd: (name: string, playlistId: string, url: string) => Promise<void>;
+  onActivate: (id: string) => Promise<void>;
+  onUpdate: (id: string, patch: Partial<Pick<SpotifyPlaylist, "name" | "sortOrder">>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}
+
+export function SpotifyPanel({ playlists, onAdd, onActivate, onUpdate, onDelete }: Props) {
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  const [connected, setConnected] = useState(Boolean(loadSpotifyToken()));
+  const [volume, setVolume] = useState(50);
+  const player = useSpotifyPlayer(connected);
+  const active = playlists.find((playlist) => playlist.active) ?? playlists[0];
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const parsed = parseSpotifyPlaylist(url);
+    if (!name.trim()) return setError("Give this playlist a name.");
+    if (!parsed) return setError("Paste a valid open.spotify.com playlist URL.");
+    await onAdd(name, parsed.playlistId, parsed.url);
+    setName(""); setUrl(""); setError("");
+  };
+  const move = async (playlist: SpotifyPlaylist, direction: -1 | 1) => {
+    const index = playlists.findIndex((item) => item.id === playlist.id);
+    const neighbor = playlists[index + direction];
+    if (!neighbor) return;
+    await Promise.all([onUpdate(playlist.id, { sortOrder: neighbor.sortOrder }), onUpdate(neighbor.id, { sortOrder: playlist.sortOrder })]);
+  };
+  const playActive = async () => {
+    if (!active) return;
+    try { await player.playPlaylist(active.playlistId); setError(""); }
+    catch (playError) { setError(playError instanceof Error ? playError.message : "Spotify playback failed."); }
+  };
+  const disconnect = () => {
+    disconnectSpotify();
+    setConnected(false);
+  };
+  return (
+    <section className="side-card spotify-card" aria-labelledby="spotify-title">
+      <div className="section-heading"><div><span className="eyebrow">Soundtrack</span><h2 id="spotify-title">Spotify ambience</h2></div><Music2 /></div>
+      {!connected ? (
+        <div className="spotify-connect">
+          <Music2 />
+          <strong>Full Spotify playback</strong>
+          <span>Connect a Premium account to play complete songs here.</span>
+          <button className="spotify-login" disabled={!isSpotifyConfigured} onClick={() => void beginSpotifyLogin().catch((loginError) => setError(loginError.message))}><LogIn /> Connect Spotify</button>
+          {!isSpotifyConfigured && <small>Add your Spotify client ID to enable login.</small>}
+        </div>
+      ) : (
+        <div className="spotify-player">
+          <div className="now-playing">
+            {player.track?.album.images[0]?.url ? <img src={player.track.album.images[0].url} alt="" /> : <div className="track-placeholder"><Music2 /></div>}
+            <div><span>{player.track ? "Now playing" : player.ready ? "Ready to play" : "Connecting…"}</span><strong>{player.track?.name ?? active?.name ?? "Choose a playlist"}</strong><small>{player.track?.artists.map((artist) => artist.name).join(", ") || "Cooperodoro"}</small></div>
+          </div>
+          <div className="player-controls">
+            <button onClick={() => void player.previousTrack()} aria-label="Previous track"><SkipBack /></button>
+            <button className="play-control" disabled={!player.ready || !active} onClick={() => player.track ? void player.togglePlay() : void playActive()} aria-label={player.paused ? "Play" : "Pause"}>{player.paused ? <Play /> : <Pause />}</button>
+            <button onClick={() => void player.nextTrack()} aria-label="Next track"><SkipForward /></button>
+          </div>
+          <label className="volume-control"><span>Volume</span><input type="range" min="0" max="100" value={volume} onChange={(event) => { const next = Number(event.target.value); setVolume(next); void player.setVolume(next / 100); }} /></label>
+          <div className="spotify-player-links"><a href={active?.url ?? "https://open.spotify.com"} target="_blank" rel="noreferrer"><ExternalLink /> Open Spotify</a><button onClick={disconnect}><Unplug /> Disconnect</button></div>
+          {player.error && <p className="field-error" role="alert">{player.error}</p>}
+        </div>
+      )}
+      <div className="playlist-list">
+        {playlists.map((playlist) => (
+          <div className={`playlist-row ${playlist.id === active?.id ? "active" : ""}`} key={playlist.id}>
+            <button className="playlist-name" onClick={() => { void onActivate(playlist.id); if (connected && player.ready) void player.playPlaylist(playlist.playlistId).catch((playError) => setError(playError.message)); }}>{playlist.name}</button>
+            <div className="row-actions">
+              <button onClick={() => void move(playlist, -1)} aria-label={`Move ${playlist.name} up`}><ArrowUp /></button>
+              <button onClick={() => void move(playlist, 1)} aria-label={`Move ${playlist.name} down`}><ArrowDown /></button>
+              <button onClick={() => { const next = prompt("Playlist name", playlist.name); if (next?.trim()) void onUpdate(playlist.id, { name: next.trim() }); }} aria-label={`Rename ${playlist.name}`}><Pencil /></button>
+              <button onClick={() => void onDelete(playlist.id)} aria-label={`Delete ${playlist.name}`}><Trash2 /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <form className="stacked-form" onSubmit={submit}>
+        <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Playlist name" maxLength={100} />
+        <div className="inline-form"><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://open.spotify.com/playlist/..." /><button className="small-primary" aria-label="Add Spotify playlist"><Plus /></button></div>
+        {error && <p className="field-error" role="alert">{error}</p>}
+      </form>
+    </section>
+  );
+}
